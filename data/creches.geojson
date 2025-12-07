@@ -1,0 +1,21 @@
+{
+"type": "FeatureCollection",
+"name": "creches",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": 1, "nome": "Cheche Elias Herckmans", "bairro": "Popular", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -34.98544646889799, -7.135142193555994 ] ] } },
+{ "type": "Feature", "properties": { "id": 2, "nome": "Creche Nenzinha Ribeiro", "bairro": "Popular", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -34.978855584482311, -7.136732303830501 ] ] } },
+{ "type": "Feature", "properties": { "id": 3, "nome": "CIEI Heitel Santiago", "bairro": "Naelson Panta", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -34.951012226246583, -7.128225662807343 ] ] } },
+{ "type": "Feature", "properties": { "id": 4, "nome": "Creche Escola Maria Carmelita M Pedroza", "bairro": "Tibiri", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -34.962335624954115, -7.153337998796543 ] ] } },
+{ "type": "Feature", "properties": { "id": 5, "nome": "Creche Escolar Lourdes Torres", "bairro": "Marcos Moura", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -34.975409641816491, -7.162761235006188 ] ] } },
+{ "type": "Feature", "properties": { "id": 6, "nome": "CIEI Leonor de Melo Gomes", "bairro": "Marcos Moura", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -34.981015721963935, -7.159950996313361 ] ] } },
+{ "type": "Feature", "properties": { "id": 7, "nome": "CIEI Dona Silva - Severina da Silva Santos", "bairro": "Jardim Europa", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -34.965031017914121, -7.144393310172683 ] ] } },
+{ "type": "Feature", "properties": { "id": 8, "nome": "CIEI Lourdes Serejo", "bairro": "Heitel Santiago", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -34.953601985887893, -7.163532053615893 ] ] } },
+{ "type": "Feature", "properties": { "id": 9, "nome": "CIEI José Cândido Feitosa", "bairro": "Livramento", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -34.901162506271028, -7.049099557970207 ] ] } },
+{ "type": "Feature", "properties": { "id": 10, "nome": "CIEI Maria Anunciada de Santana", "bairro": "Cicerolância", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -34.984090204662884, -7.250832304892612 ] ] } },
+{ "type": "Feature", "properties": { "id": 11, "nome": "CIEI Prefeito Antônio Joaquim de Moraes", "bairro": "Bebelândia", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -34.963194083409633, -7.079448691981804 ] ] } },
+{ "type": "Feature", "properties": { "id": 12, "nome": "CIEI FUNCIONARIO JOAO MOREIRA", "bairro": "Odilândia", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -35.022266760976457, -7.236154383741405 ] ] } },
+{ "type": "Feature", "properties": { "id": 13, "nome": "CIEI Raquel Pedrosa", "bairro": "Lerolândia", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -34.977905405780994, -6.974122416822597 ] ] } },
+{ "type": "Feature", "properties": { "id": 14, "nome": "CIEI Dona Rita", "bairro": "Forte Velho", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -34.874815604717185, -6.988952860082038 ] ] } }
+]
+}
