@@ -3,18 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Santa Rita GeoPB | SIG</title>
+    <title>Santa Rita Geoportal | SIG</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    
     <link rel="stylesheet" href="https://ppete2.github.io/Leaflet.PolylineMeasure/Leaflet.PolylineMeasure.css" />
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-
     <script src="https://ppete2.github.io/Leaflet.PolylineMeasure/Leaflet.PolylineMeasure.js"></script>
     
     <style>
@@ -30,381 +27,175 @@
             --sombra-media: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
-        /* Estilos Globais */
-        html, body {
-            height: 100%; 
-        }
-
+        html, body { height: 100%; }
         body {
             font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background-color: var(--cor-fundo);
             overflow: hidden; 
         }
 
-        /* Estilos do Mapa - FUNDO BRANCO GARANTIDO */
         #mapid {
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            position: absolute;
-            top: 0;
-            left: 0;
+            width: 100%; height: 100%;
+            z-index: 0; position: absolute; top: 0; left: 0;
             background-color: #ffffff;
         }
 
-        /* --- BOTÃO DE ABRIR O MENU --- */
+        /* BOTÃO DE ABRIR O MENU */
         #sidebarToggleBtn {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-            background-color: var(--cor-principal);
-            color: white;
-            border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 5px;
-            box-shadow: var(--sombra-media);
-            cursor: pointer;
-            font-size: 1.2em;
-            transition: background-color 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute; top: 20px; left: 20px; z-index: 1000;
+            background-color: var(--cor-principal); color: white;
+            border: none; width: 45px; height: 45px; border-radius: 5px;
+            box-shadow: var(--sombra-media); cursor: pointer;
+            font-size: 1.2em; transition: background-color 0.3s;
+            display: flex; align-items: center; justify-content: center;
         }
+        #sidebarToggleBtn:hover { background-color: var(--cor-secundaria); }
 
-        #sidebarToggleBtn:hover {
-            background-color: var(--cor-secundaria);
-        }
-
-        /* --- SIDEBAR DESLIZANTE --- */
+        /* SIDEBAR */
         .sidebar {
-            position: absolute;
-            top: 0;
-            left: -320px; 
-            width: 300px;
-            height: 100%;
+            position: absolute; top: 0; left: -320px; 
+            width: 300px; height: 100%;
             background-color: var(--cor-texto-claro);
             box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-            z-index: 2000; 
-            display: flex;
-            flex-direction: column;
+            z-index: 2000; display: flex; flex-direction: column;
             transition: left 0.4s ease-in-out; 
         }
-
-        .sidebar.active {
-            left: 0;
-        }
+        .sidebar.active { left: 0; }
 
         .close-sidebar-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.2em;
-            cursor: pointer;
+            position: absolute; top: 15px; right: 15px;
+            background: none; border: none; color: white;
+            font-size: 1.2em; cursor: pointer;
         }
 
         .sidebar-header {
-            padding: 15px 20px;
-            background-color: var(--cor-principal);
-            color: var(--cor-texto-claro);
-            border-bottom: 2px solid var(--cor-secundaria);
+            padding: 15px 20px; background-color: var(--cor-principal);
+            color: var(--cor-texto-claro); border-bottom: 2px solid var(--cor-secundaria);
             position: relative;
         }
-
-        .sidebar-header img {
-            max-height: 50px;
-            margin-right: 15px;
-            border-radius: 4px;
-        }
-
-        .sidebar-header h3 {
-            margin: 0;
-            font-weight: 600;
-            font-size: 1.2em;
-        }
+        .sidebar-header img { max-height: 50px; margin-right: 15px; border-radius: 4px; }
+        .sidebar-header h3 { margin: 0; font-weight: 600; font-size: 1.2em; }
         
         .sidebar-footer {
-            margin-top: auto;
-            padding: 20px;
-            font-size: 0.7em;
-            text-align: center;
-            color: #777;
-            border-top: 1px solid var(--cor-borda);
+            margin-top: auto; padding: 20px; font-size: 0.7em;
+            text-align: center; color: #777; border-top: 1px solid var(--cor-borda);
             background-color: #f9f9f9;
         }
 
-        .accordion-item {
-            border-bottom: 1px solid var(--cor-borda);
-        }
-        
-        .accordion-container {
-            overflow-y: auto; 
-            flex-grow: 1;
-        }
+        .accordion-item { border-bottom: 1px solid var(--cor-borda); }
+        .accordion-container { overflow-y: auto; flex-grow: 1; }
 
         .accordion-title {
-            padding: 15px 20px;
-            background-color: var(--cor-fundo);
-            color: var(--cor-texto-escuro);
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 15px 20px; background-color: var(--cor-fundo);
+            color: var(--cor-texto-escuro); font-weight: 600; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
             transition: background-color 0.2s;
         }
-
-        .accordion-title:hover {
-            background-color: #e0e0e0;
-        }
+        .accordion-title:hover { background-color: #e0e0e0; }
 
         .accordion-content {
-            max-height: 0;
-            overflow: hidden;
+            max-height: 0; overflow: hidden;
             transition: max-height 0.4s ease-in-out;
-            padding: 0 20px;
-            background-color: var(--cor-texto-claro);
+            padding: 0 20px; background-color: var(--cor-texto-claro);
         }
-
-        .accordion-item.active .accordion-content {
-            max-height: 500px; 
-        }
-
-        .accordion-item.active .accordion-title i {
-            transform: rotate(180deg);
-        }
+        .accordion-item.active .accordion-content { max-height: 500px; }
+        .accordion-item.active .accordion-title i { transform: rotate(180deg); }
 
         .layer-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-top: 1px solid var(--cor-borda);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0; border-top: 1px solid var(--cor-borda);
         }
-        
-        .layer-item:first-child {
-            border-top: none;
-        }
+        .layer-item:first-child { border-top: none; }
+        .layer-item span { font-size: 0.9em; }
 
-        .layer-item span {
-            font-size: 0.9em;
-        }
-
-        /* --- CONTROLE DE PESQUISA (POSICIONADO AO LADO DO ZOOM) --- */
+        /* CONTROLE DE PESQUISA */
         .custom-search-control {
-            background-color: white;
-            padding: 5px;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.65); 
-            border-radius: 4px;
-            position: absolute !important;
-            top: 10px;      
-            right: 55px;    
-            margin: 0 !important;
-            z-index: 800;   
-            display: flex;
-            align-items: center;
+            background-color: white; padding: 5px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.65); border-radius: 4px;
+            position: absolute !important; top: 10px; right: 55px; margin: 0 !important;
+            z-index: 800; display: flex; align-items: center;
         }
 
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 24px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
+        .switch { position: relative; display: inline-block; width: 40px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: 0.4s;
-            border-radius: 24px;
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: 0.4s; border-radius: 24px;
         }
-
         .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: 0.4s;
-            border-radius: 50%;
+            position: absolute; content: ""; height: 18px; width: 18px;
+            left: 3px; bottom: 3px; background-color: white;
+            transition: 0.4s; border-radius: 50%;
         }
+        input:checked + .slider { background-color: var(--cor-principal); }
+        input:checked + .slider:before { transform: translateX(16px); }
 
-        input:checked + .slider {
-            background-color: var(--cor-principal);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(16px);
-        }
-
-        .legend {
-            line-height: 18px;
-            color: #555;
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: var(--sombra-leve);
-        }
-        
         .legend.professional {
-            background: white;
-            padding: 0; 
-            border-radius: 6px;
+            background: white; padding: 0; border-radius: 6px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
-            font-size: 0.95em;
-            width: auto; 
-            min-width: 180px;
+            font-size: 0.95em; width: auto; min-width: 180px;
         }
-
         .legend-header {
-            background-color: var(--cor-principal); 
-            color: var(--cor-texto-claro); 
-            padding: 8px 15px;
-            font-weight: 700;
-            border-top-left-radius: 6px;
-            border-top-right-radius: 6px;
-            text-align: left;
-            font-size: 1.1em;
+            background-color: var(--cor-principal); color: var(--cor-texto-claro); 
+            padding: 8px 15px; font-weight: 700; border-top-left-radius: 6px;
+            border-top-right-radius: 6px; text-align: left; font-size: 1.1em;
         }
-
-        .legend-content {
-            padding: 10px 15px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .legend-item.icon {
-            align-items: center;
-            line-height: 1.2;
-        }
+        .legend-content { padding: 10px 15px; }
+        .legend-item { display: flex; align-items: center; margin-bottom: 8px; }
+        .legend-item.icon { align-items: center; line-height: 1.2; }
 
         .legend-color-box {
-            width: 20px;
-            height: 14px;
-            border: 1px solid #aaa; 
-            margin-right: 10px;
-            opacity: 0.85; 
-            box-sizing: border-box; 
+            width: 20px; height: 14px; border: 1px solid #aaa; 
+            margin-right: 10px; opacity: 0.85; box-sizing: border-box; 
         }
-        
         .legend-line {
-            width: 20px;
-            height: 4px;
-            border: 1px solid #333; 
-            margin-right: 10px;
-            opacity: 1;
-            box-sizing: border-box; 
+            width: 20px; height: 4px; border: 1px solid #333; 
+            margin-right: 10px; opacity: 1; box-sizing: border-box; 
         }
-        
         .legend-dash-box {
-            width: 20px;
-            height: 4px;
-            margin-right: 10px;
-            opacity: 1;
-            border: 2px dashed;
-            box-sizing: border-box; 
+            width: 20px; height: 4px; margin-right: 10px; opacity: 1;
+            border: 2px dashed; box-sizing: border-box; 
         }
 
         .bairro-label {
-            background: transparent;
-            border: none;
-            box-shadow: none;
-            font-weight: 700; 
-            font-size: 14px; 
-            color: #333; 
+            background: transparent; border: none; box-shadow: none;
+            font-weight: 700; font-size: 14px; color: #333; 
             text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff; 
-            pointer-events: none; 
-            white-space: nowrap; 
-            text-align: center;
+            pointer-events: none; white-space: nowrap; text-align: center;
         }
         
-        .custom-creche-icon, .custom-escola-icon, .custom-posto-icon {
-            background: none !important;
-            border: none !important;
-            z-index: 100;
+        .custom-creche-icon, .custom-escola-icon, .custom-posto-icon, .custom-aterro-icon {
+            background: none !important; border: none !important; z-index: 100;
         }
 
         .leaflet-popup-content-wrapper {
-            background: var(--cor-texto-claro); 
-            color: var(--cor-texto-escuro); 
-            border-radius: 8px;
-            padding: 1px; 
-            box-shadow: var(--sombra-media);
+            background: var(--cor-texto-claro); color: var(--cor-texto-escuro); 
+            border-radius: 8px; padding: 1px; box-shadow: var(--sombra-media);
         }
-
-        .leaflet-popup-content {
-            margin: 15px 15px 10px 15px; 
-            font-size: 0.9em;
-        }
-
+        .leaflet-popup-content { margin: 15px 15px 10px 15px; font-size: 0.9em; }
         .popup-header {
-            background-color: var(--cor-principal); 
-            color: var(--cor-texto-claro); 
-            padding: 8px 15px;
-            margin: -15px -15px 10px -15px; 
-            border-top-left-radius: 6px;
-            border-top-right-radius: 6px;
-            font-size: 1.1em;
-            font-weight: 700;
-            text-align: center;
+            background-color: var(--cor-principal); color: var(--cor-texto-claro); 
+            padding: 8px 15px; margin: -15px -15px 10px -15px; 
+            border-top-left-radius: 6px; border-top-right-radius: 6px;
+            font-size: 1.1em; font-weight: 700; text-align: center;
         }
-
-        .popup-data strong {
-            color: var(--cor-secundaria); 
-            font-weight: 600;
-        }
-        .popup-data p {
-            margin: 5px 0;
-        }
+        .popup-data strong { color: var(--cor-secundaria); font-weight: 600; }
+        .popup-data p { margin: 5px 0; }
         
         .leaflet-control-scale-line {
-            border: 2px solid #777;
-            border-top: none;
-            line-height: 1.1;
-            padding: 2px 5px 1px;
-            font-size: 11px;
-            white-space: nowrap;
-            overflow: hidden;
-            box-sizing: border-box;
-            background: rgba(255, 255, 255, 0.8);
-            box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            border: 2px solid #777; border-top: none; line-height: 1.1;
+            padding: 2px 5px 1px; font-size: 11px; white-space: nowrap;
+            overflow: hidden; box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.8); box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
-        
-        .polyline-measure-unicode-icon {
-            font-size: 18px !important;
-            color: #333;
-        }
+        .polyline-measure-unicode-icon { font-size: 18px !important; color: #333; }
 
     </style>
 </head>
 <body>
 
-    <button id="sidebarToggleBtn" title="Abrir Camadas">
-        <i class="fas fa-layer-group"></i>
-    </button>
+    <button id="sidebarToggleBtn" title="Abrir Camadas"><i class="fas fa-layer-group"></i></button>
 
     <div class="sidebar" id="sidebarMenu">
         <div class="sidebar-header">
@@ -414,135 +205,61 @@
 
         <div class="accordion-container">
             <div class="accordion-item active">
-                <div class="accordion-title">
-                    ARQUIVOS GERAIS
-                    <i class="fas fa-chevron-up"></i>
-                </div>
+                <div class="accordion-title">ARQUIVOS GERAIS <i class="fas fa-chevron-up"></i></div>
                 <div class="accordion-content">
-                    <div class="layer-item">
-                        <span>Limites Municipais</span>
-                        <label class="switch"><input type="checkbox" id="limitesLayerToggle" checked><span class="slider"></span></label>
-                    </div>
-                    <div class="layer-item">
-                        <span>Bairros</span>
-                        <label class="switch"><input type="checkbox" id="bairrosLayerToggle"><span class="slider"></span></label>
-                    </div>
-                    <div class="layer-item">
-                        <span>Setores Censitários</span>
-                        <label class="switch"><input type="checkbox" id="setoresLayerToggle"><span class="slider"></span></label>
-                    </div>
-                    <div class="layer-item">
-                        <span>Ruído do Aeroporto</span>
-                        <label class="switch"><input type="checkbox" id="ruidoAeroportoLayerToggle"><span class="slider"></span></label>
-                    </div>
-                    <div class="layer-item">
-                        <span>Zona Urbana</span>
-                        <label class="switch"><input type="checkbox" id="zonaUrbanaLayerToggle"><span class="slider"></span></label>
-                    </div>
+                    <div class="layer-item"><span>Limites Municipais</span><label class="switch"><input type="checkbox" id="limitesLayerToggle" checked><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Bairros</span><label class="switch"><input type="checkbox" id="bairrosLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Setores Censitários</span><label class="switch"><input type="checkbox" id="setoresLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Ruído do Aeroporto</span><label class="switch"><input type="checkbox" id="ruidoAeroportoLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Zona Urbana</span><label class="switch"><input type="checkbox" id="zonaUrbanaLayerToggle"><span class="slider"></span></label></div>
                 </div>
             </div>
 
             <div class="accordion-item">
-                <div class="accordion-title">
-                    EQUIPAMENTOS MUNICIPAIS
-                    <i class="fas fa-chevron-down"></i>
-                </div>
+                <div class="accordion-title">EQUIPAMENTOS MUNICIPAIS <i class="fas fa-chevron-down"></i></div>
                 <div class="accordion-content">
-                    <div class="layer-item">
-                        <span>Unidades de Ensino</span>
-                        <label class="switch"><input type="checkbox" id="escolasLayerToggle"><span class="slider"></span></label>
-                    </div>
-                    <div class="layer-item">
-                        <span>Creches</span>
-                        <label class="switch"><input type="checkbox" id="crechesLayerToggle"><span class="slider"></span></label>
-                    </div>
-                    <div class="layer-item">
-                        <span>Centros Culturais</span>
-                        <label class="switch"><input type="checkbox" id="culturaisLayerToggle"><span class="slider"></span></label>
-                    </div>
-                    <div class="layer-item">
-                        <span>Praças e Parques</span>
-                        <label class="switch"><input type="checkbox" id="pracasLayerToggle"><span class="slider"></span></label>
-                    </div>
-                    <div class="layer-item">
-                        <span>Postos de Saúde / Hospitais</span>
-                        <label class="switch"><input type="checkbox" id="postosSaudeLayerToggle"><span class="slider"></span></label>
-                    </div>
+                    <div class="layer-item"><span>Unidades de Ensino</span><label class="switch"><input type="checkbox" id="escolasLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Creches</span><label class="switch"><input type="checkbox" id="crechesLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Postos de Saúde / Hospitais</span><label class="switch"><input type="checkbox" id="postosSaudeLayerToggle"><span class="slider"></span></label></div>
+                    
+                    <div class="layer-item"><span>Mercados e Feiras</span><label class="switch"><input type="checkbox" id="mercadosLayerToggle"><span class="slider"></span></label></div>
+                    
+                    <div class="layer-item"><span>Aterro Sanitário</span><label class="switch"><input type="checkbox" id="aterroLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Centros Culturais</span><label class="switch"><input type="checkbox" id="culturaisLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Praças e Parques</span><label class="switch"><input type="checkbox" id="pracasLayerToggle"><span class="slider"></span></label></div>
                 </div>
             </div>
 
             <div class="accordion-item">
-                <div class="accordion-title">
-                    MOBILIDADE URBANA
-                    <i class="fas fa-chevron-down"></i>
-                </div>
+                <div class="accordion-title">MOBILIDADE URBANA <i class="fas fa-chevron-down"></i></div>
                 <div class="accordion-content">
-                    <div class="layer-item">
-                        <span>Itinerário</span>
-                        <label class="switch"><input type="checkbox" id="itinerarioLayerToggle"><span class="slider"></span></label>
-                    </div>
-                    <div class="layer-item">
-                        <span>Ciclovias</span>
-                        <label class="switch"><input type="checkbox" id="cicloviasLayerToggle"><span class="slider"></span></label>
-                    </div>
-                    <div class="layer-item">
-                        <span>Pontos de Táxi</span>
-                        <label class="switch"><input type="checkbox" id="taxiLayerToggle"><span class="slider"></span></label>
-                    </div>
+                    <div class="layer-item"><span>Itinerário</span><label class="switch"><input type="checkbox" id="itinerarioLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Ciclovias</span><label class="switch"><input type="checkbox" id="cicloviasLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Pontos de Táxi</span><label class="switch"><input type="checkbox" id="taxiLayerToggle"><span class="slider"></span></label></div>
                 </div>
             </div>
 
             <div class="accordion-item">
-                <div class="accordion-title">
-                    RECURSOS NATURAIS
-                    <i class="fas fa-chevron-down"></i>
-                </div>
+                <div class="accordion-title">RECURSOS NATURAIS <i class="fas fa-chevron-down"></i></div>
                 <div class="accordion-content">
-                    <div class="layer-item">
-                        <span>Bacias hidrográficas</span>
-                        <label class="switch"><input type="checkbox" id="baciasLayerToggle"><span class="slider"></span></label>
-                    </div>
-                    <div class="layer-item">
-                        <span>Vegetação</span>
-                        <label class="switch"><input type="checkbox" id="vegetacaoLayerToggle"><span class="slider"></span></label>
-                    </div>
-                    <div class="layer-item">
-                        <span>Corpos d'Água</span>
-                        <label class="switch"><input type="checkbox" id="aguaLayerToggle"><span class="slider"></span></label>
-                    </div>
-                    <div class="layer-item">
-                        <span>Áreas de Preservação</span>
-                        <label class="switch"><input type="checkbox" id="appLayerToggle"><span class="slider"></span></label>
-                    </div>
+                    <div class="layer-item"><span>Bacias hidrográficas</span><label class="switch"><input type="checkbox" id="baciasLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Vegetação</span><label class="switch"><input type="checkbox" id="vegetacaoLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Corpos d'Água</span><label class="switch"><input type="checkbox" id="aguaLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Áreas de Preservação</span><label class="switch"><input type="checkbox" id="appLayerToggle"><span class="slider"></span></label></div>
                 </div>
             </div>
             
             <div class="accordion-item">
-                <div class="accordion-title">
-                    PLANEJAMENTO URBANO
-                    <i class="fas fa-chevron-down"></i>
-                </div>
+                <div class="accordion-title">PLANEJAMENTO URBANO <i class="fas fa-chevron-down"></i></div>
                 <div class="accordion-content">
-                    <div class="layer-item">
-                        <span>Zoneamento</span>
-                        <label class="switch"><input type="checkbox" id="zoneamentoLayerToggle"><span class="slider"></span></label>
-                    </div>
-                    <div class="layer-item">
-                        <span>Áreas de Risco</span>
-                        <label class="switch"><input type="checkbox" id="areasDeRiscoLayerToggle"><span class="slider"></span></label>
-                    </div>
-                    <div class="layer-item">
-                        <span>População Censo IBGE 2022</span>
-                        <label class="switch"><input type="checkbox" id="populacaoLayerToggle"><span class="slider"></span></label>
-                    </div>
+                    <div class="layer-item"><span>Zoneamento</span><label class="switch"><input type="checkbox" id="zoneamentoLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Áreas de Risco</span><label class="switch"><input type="checkbox" id="areasDeRiscoLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>População Censo IBGE 2022</span><label class="switch"><input type="checkbox" id="populacaoLayerToggle"><span class="slider"></span></label></div>
                 </div>
             </div>
 
             <div class="accordion-item">
-                <div class="accordion-title">
-                    DOWNLOAD METADADOS
-                    <i class="fas fa-chevron-down"></i>
-                </div>
+                <div class="accordion-title">DOWNLOAD METADADOS <i class="fas fa-chevron-down"></i></div>
                 <div class="accordion-content">
                     <div class="layer-item" style="justify-content: start;">
                         <i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--cor-principal);"></i>
@@ -550,9 +267,7 @@
                     </div>
                 </div>
             </div>
-            
         </div>
-        
         <div class="sidebar-footer">
             DESENVOLVIDO POR ARTHUR AQUINO TOMAZ, CONCLUINTE DO CURSO DE TECNOLOGIA EM GEOPROCESSAMENTO DO INSTITUTO FEDERAL DA PARAIBA - CAMPUS JOÃO PESSOA
         </div>
@@ -561,7 +276,6 @@
     <div id="mapid"></div>
 
     <script>
-        // Lógica do Acordeão
         document.querySelectorAll('.accordion-title').forEach(button => {
             button.addEventListener('click', () => {
                 const accordionItem = button.parentElement;
@@ -569,7 +283,6 @@
             });
         });
 
-        // Toggle Sidebar
         const sidebar = document.getElementById('sidebarMenu');
         const openBtn = document.getElementById('sidebarToggleBtn');
         const closeBtn = document.getElementById('closeSidebarBtn');
@@ -583,120 +296,55 @@
         var layerControl;
         var mymap;
 
-        // Camadas
-        var limitesLayer = null; 
-        var bairrosLayer = null; 
-        var setoresLayer = null; 
-        var ruidoAeroportoLayer = null;
-        var zonaUrbanaLayer = null;
-        var areasDeRiscoLayer = null; 
-        var pracasLayer = null; 
-        var crechesLayer = null; 
-        var bufferCrechesLayer = null; 
-        var escolasLayer = null; 
-        var postosSaudeLayer = null; 
-        var itinerarioLayer = null; 
-        var baciasLayer = null; 
+        var limitesLayer = null, bairrosLayer = null, setoresLayer = null, ruidoAeroportoLayer = null;
+        var zonaUrbanaLayer = null, areasDeRiscoLayer = null, pracasLayer = null, crechesLayer = null; 
+        var bufferCrechesLayer = null, escolasLayer = null, postosSaudeLayer = null;
+        var itinerarioLayer = null, baciasLayer = null;
+        
+        var mercadosLayer = null; 
+        var mercadosLegend = null;
 
-        // Legendas
-        var geralLegend = null; 
-        var itinerarioLegend = null; 
-        var baciasLegend = null; 
-        var pracasLegend = null; 
-        var bufferLegend = null;      
-        var saudeLegend = null; 
-        var escolasLegend = null;
+        // --- VARIÁVEIS ATERRO ---
+        var aterroLayer = null;
+        var aterroLegend = null;
+        // ------------------------
 
-        // Placeholders
-        var culturaisLayer = null;
-        var cicloviasLayer = null;
-        var taxiLayer = null;
-        var vegetacaoLayer = null;
-        var aguaLayer = null;
-        var appLayer = null;
-        var zoneamentoLayer = null;
-        var populacaoLayer = null;
+        var geralLegend = null, itinerarioLegend = null, baciasLegend = null, pracasLegend = null;
+        var bufferLegend = null, saudeLegend = null, escolasLegend = null;
+
+        var culturaisLayer = null, cicloviasLayer = null, taxiLayer = null;
+        var vegetacaoLayer = null, aguaLayer = null, appLayer = null;
+        var zoneamentoLayer = null, populacaoLayer = null;
 
         const MAX_ZOOM_FOR_LABELS = 13; 
 
         // =======================================================
         // 2. INICIALIZAÇÃO DO MAPA
         // =======================================================
-        var santaRitaLat = -7.1189; 
-        var santaRitaLong = -34.9608;
-        var zoomLevel = 11; 
+        var santaRitaLat = -7.1189; var santaRitaLong = -34.9608; var zoomLevel = 11; 
         mymap = L.map('mapid').setView([santaRitaLat, santaRitaLong], zoomLevel);
-
-        // Define a posição do Zoom para TOPRIGHT
         mymap.zoomControl.setPosition('topright');
 
-        // --- ADICIONANDO OS MAPAS BASE (ADICIONADO PRIMEIRO PARA FICAR ACIMA) ---
-        
-        // 1. Mapa Branco
-        var whiteLayer = L.tileLayer('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEAAQMAAABmvDolAAAAA1BMVEX///+nxBvIAAAAH0lEQVQYGe3BAQ0AAADCIPunfg43YAAAAAAAAAAA5wIhAAAB9aK9BAAAAABJRU5ErkJggg==', {
-            minZoom: 0,
-            maxZoom: 20,
-            attribution: 'Fundo Branco'
-        }).addTo(mymap); 
-
-        // 2. OpenStreetMap
-        var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap'
-        }); 
-
-        // 3. Satélite
-        var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri',
-            maxZoom: 19
-        });
+        var whiteLayer = L.tileLayer('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEAAQMAAABmvDolAAAAA1BMVEX///+nxBvIAAAAH0lEQVQYGe3BAQ0AAADCIPunfg43YAAAAAAAAAAA5wIhAAAB9aK9BAAAAABJRU5ErkJggg==', { minZoom: 0, maxZoom: 20, attribution: 'Fundo Branco' }).addTo(mymap); 
+        var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }); 
+        var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri', maxZoom: 19 });
         
         var baseMaps = { "Fundo Branco": whiteLayer, "OpenStreetMap": osmLayer, "Satélite": satelliteLayer };
-        
-        // ADICIONANDO O CONTROLE DE CAMADAS (LAYERS) PRIMEIRO
         layerControl = L.control.layers(baseMaps, {}).addTo(mymap);
 
+        L.control.polylineMeasure({ position: 'topright', unit: 'kilometres', showBearings: false, clearMeasurementsOnStop: false, showClearControl: true, showUnitControl: true, measureControlTitleOn: 'Ativar Medição', measureControlTitleOff: 'Desativar Medição', tooltipTextFinish: 'Clique para finalizar', tooltipTextDelete: 'Pressione SHIFT e clique para deletar', tooltipTextMove: 'Clique e arraste para mover', tooltipTextResume: '<br>Pressione CTRL e clique para continuar', tooltipTextAdd: 'Clique para começar', }).addTo(mymap);
 
-        // --- ADICIONANDO A FERRAMENTA DE MEDIÇÃO (DEPOIS DOS LAYERS, PARA FICAR EMBAIXO) ---
-        L.control.polylineMeasure({
-            position: 'topright', 
-            unit: 'kilometres',
-            showBearings: false,
-            clearMeasurementsOnStop: false,
-            showClearControl: true,
-            showUnitControl: true,
-            measureControlTitleOn: 'Ativar Medição',
-            measureControlTitleOff: 'Desativar Medição',
-            tooltipTextFinish: 'Clique para finalizar',
-            tooltipTextDelete: 'Pressione SHIFT e clique para deletar',
-            tooltipTextMove: 'Clique e arraste para mover',
-            tooltipTextResume: '<br>Pressione CTRL e clique para continuar',
-            tooltipTextAdd: 'Clique para começar',
-        }).addTo(mymap);
-
-        // --- ADICIONANDO A ESCALA (CANTO INFERIOR) ---
-        L.control.scale({
-            position: 'bottomright', 
-            imperial: false,        
-            maxWidth: 200           
-        }).addTo(mymap);
-
+        L.control.scale({ position: 'bottomright', imperial: false, maxWidth: 200 }).addTo(mymap);
 
         // =======================================================
-        // 3. BARRA DE PESQUISA (MODIFICADA PARA FICAR AO LADO DO ZOOM)
+        // 3. BARRA DE PESQUISA
         // =======================================================
         const SearchControl = L.Control.extend({
             onAdd: function(map) {
                 const container = L.DomUtil.create('div', 'leaflet-bar custom-search-control');
-                container.innerHTML = `
-                    <input type="text" id="layerSearchInput" placeholder="Buscar camada..." style="width: 150px; padding: 5px; border:none; outline:none;">
-                    <button id="layerSearchButton" style="padding: 5px; background:white; border:none; cursor:pointer;"><i class="fas fa-search" style="color:var(--cor-principal)"></i></button>
-                `;
+                container.innerHTML = `<input type="text" id="layerSearchInput" placeholder="Buscar camada..." style="width: 150px; padding: 5px; border:none; outline:none;"><button id="layerSearchButton" style="padding: 5px; background:white; border:none; cursor:pointer;"><i class="fas fa-search" style="color:var(--cor-principal)"></i></button>`;
                 L.DomEvent.disableClickPropagation(container);
-                
-                setTimeout(() => {
-                    document.getElementById('layerSearchButton').addEventListener('click', () => searchLayerByKeyword(document.getElementById('layerSearchInput').value));
-                }, 100);
+                setTimeout(() => { document.getElementById('layerSearchButton').addEventListener('click', () => searchLayerByKeyword(document.getElementById('layerSearchInput').value)); }, 100);
                 return container;
             }
         });
@@ -705,22 +353,19 @@
         function searchLayerByKeyword(term) {
             const normalizedTerm = term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const mapKeys = {
-                "escola": "escolasLayerToggle",
-                "bairro": "bairrosLayerToggle",
-                "limite": "limitesLayerToggle",
-                "saude": "postosSaudeLayerToggle",
-                "risco": "areasDeRiscoLayerToggle"
+                "escola": "escolasLayerToggle", "bairro": "bairrosLayerToggle", "limite": "limitesLayerToggle",
+                "saude": "postosSaudeLayerToggle", "risco": "areasDeRiscoLayerToggle",
+                "mercado": "mercadosLayerToggle", "feira": "mercadosLayerToggle", "abatedouro": "mercadosLayerToggle",
+                "aterro": "aterroLayerToggle", "lixo": "aterroLayerToggle"
             };
             for (let k in mapKeys) {
                 if (normalizedTerm.includes(k)) {
-                    if(!sidebar.classList.contains('active')) {
-                        sidebar.classList.add('active');
-                    }
+                    if(!sidebar.classList.contains('active')) { sidebar.classList.add('active'); }
                     document.getElementById(mapKeys[k]).click();
                     return;
                 }
             }
-            alert("Camada não encontrada. Tente 'escola', 'bairro', 'saude'.");
+            alert("Camada não encontrada. Tente 'escola', 'bairro', 'saude', 'mercado'.");
         }
 
         // =======================================================
@@ -737,9 +382,7 @@
             let c = '#cccccc';
             if(f.properties.nome_bacia) {
                 let n = f.properties.nome_bacia.toLowerCase();
-                if(n.includes('miriri')) c = '#FFFFBA';
-                else if(n.includes('paraiba')) c = '#FFB3BA';
-                else if(n.includes('gramame')) c = '#BAE1FF';
+                if(n.includes('miriri')) c = '#FFFFBA'; else if(n.includes('paraiba')) c = '#FFB3BA'; else if(n.includes('gramame')) c = '#BAE1FF';
             }
             return { fillColor: c, weight: 1, color: '#666', fillOpacity: 0.5 }; 
         }
@@ -747,108 +390,72 @@
         function pracasStyle(f) {
             let fc = '#90EE90', c = '#3CB371';
             let t = (f.properties.tipo || '').toLowerCase();
-            if(t.includes('parque')) { fc = '#4169E1'; c='#191970'; }
-            else if(t.includes('calçadão')) { fc = '#FFD700'; c='#DAA520'; }
+            if(t.includes('parque')) { fc = '#4169E1'; c='#191970'; } else if(t.includes('calçadão')) { fc = '#FFD700'; c='#DAA520'; }
             return { fillColor: fc, weight: 2, color: c, fillOpacity: 0.7 };
         }
         
         function itinerarioStyle(f) {
-            let c = '#00FF00';
-            if(f.properties.Linha === 'Heitel') c = '#A0522D';
+            let c = '#00FF00'; if(f.properties.Linha === 'Heitel') c = '#A0522D';
             return { color: c, weight: 4 };
         }
         
         function bufferCrechesStyle() { return { fillColor: '#F5F5DC', color: '#A0522D', weight: 1, opacity: 0.7, fillOpacity: 0.4 }; }
 
-        // --- ÍCONES (DIVERSIFICADOS) ---
+        function mercadosStyle(feature) {
+            var valorTipo = (feature.properties.Tipo || "").toString().toUpperCase();
+            var fillColor = '#cccccc'; var borderColor = '#666666';
+            if (valorTipo.includes('MERCADO')) { fillColor = '#FF0000'; borderColor = '#8B0000'; } 
+            else if (valorTipo.includes('FEIRA')) { fillColor = '#008000'; borderColor = '#004d00'; } 
+            else if (valorTipo.includes('ABAT')) { fillColor = '#800080'; borderColor = '#4B0082'; }
+            return { fillColor: fillColor, weight: 2, opacity: 1, color: borderColor, dashArray: '', fillOpacity: 0.7 };
+        }
 
-        // Creche - BOLINHA VERMELHA 16px COM BORDA BRANCA
+        // --- NOVO ESTILO: ATERRO SANITÁRIO (Marrom) ---
+        function aterroStyle(feature) {
+            return {
+                fillColor: '#795548', // Marrom
+                weight: 2, opacity: 1, color: '#3E2723', dashArray: '5, 5', fillOpacity: 0.7
+            };
+        }
+        
+        // Ícone caso o aterro seja ponto
+        function aterroIcon() {
+            return L.divIcon({
+                className: 'custom-aterro-icon',
+                html: '<i class="fas fa-trash-alt" style="color: #795548; font-size: 18px; text-shadow: 1px 1px 0 #fff;"></i>',
+                iconSize: [18, 18], iconAnchor: [9, 9], popupAnchor: [0, -9]
+            });
+        }
+
+        // --- ÍCONES ---
         function crechesIcon() { 
             const size = 16;
-            const cssCircle = `
-                <div style="
-                    width: ${size}px;
-                    height: ${size}px;
-                    background-color: #DC143C;
-                    border: 2px solid white;
-                    border-radius: 50%;
-                    box-sizing: border-box;
-                    box-shadow: 0 0 4px rgba(0,0,0,0.3);
-                "></div>
-            `;
-
-            return L.divIcon({ 
-                className: 'custom-creche-icon', 
-                html: cssCircle,
-                iconSize: [size, size], 
-                iconAnchor: [size/2, size/2], 
-                popupAnchor: [0, -size/2] 
-            }); 
+            const cssCircle = `<div style="width: ${size}px; height: ${size}px; background-color: #DC143C; border: 2px solid white; border-radius: 50%; box-sizing: border-box; box-shadow: 0 0 4px rgba(0,0,0,0.3);"></div>`;
+            return L.divIcon({ className: 'custom-creche-icon', html: cssCircle, iconSize: [size, size], iconAnchor: [size/2, size/2], popupAnchor: [0, -size/2] }); 
         }
         
         function postosSaudeIcon(feature) { 
-            let color = '#008000'; 
-            let iconClass = 'fa-clinic-medical'; 
-            let zIndex = 100;
-            let size = 16;
-
+            let color = '#008000'; let iconClass = 'fa-clinic-medical'; let zIndex = 100; let size = 16;
             if (feature && feature.properties) {
                 let tipoOriginal = feature.properties.TIPO || feature.properties.tipo || "";
-                
                 if (tipoOriginal) {
                     let tipo = tipoOriginal.toString().toUpperCase().trim();
-                    
-                    if (tipo.includes('HOSPITAL')) {
-                        color = '#007BFF'; 
-                        iconClass = 'fa-hospital'; 
-                        zIndex = 200; size = 18; 
-                    } 
-                    else if (tipo.includes('SECRETARIA')) {
-                        color = '#FF8C00'; 
-                        iconClass = 'fa-building'; 
-                        zIndex = 150;
-                    } 
-                    else if (tipo.includes('CENTRO')) {
-                        color = '#9C27B0'; 
-                        iconClass = 'fa-star-of-life'; 
-                        zIndex = 150;
-                    }
-                    else if (tipo.includes('SERVIÇO') || tipo.includes('SERVICO')) {
-                        color = '#DC143C'; 
-                        iconClass = 'fa-briefcase-medical'; 
-                        zIndex = 150;
-                    }
+                    if (tipo.includes('HOSPITAL')) { color = '#007BFF'; iconClass = 'fa-hospital'; zIndex = 200; size = 18; } 
+                    else if (tipo.includes('SECRETARIA')) { color = '#FF8C00'; iconClass = 'fa-building'; zIndex = 150; } 
+                    else if (tipo.includes('CENTRO')) { color = '#9C27B0'; iconClass = 'fa-star-of-life'; zIndex = 150; }
+                    else if (tipo.includes('SERVIÇO') || tipo.includes('SERVICO')) { color = '#DC143C'; iconClass = 'fa-briefcase-medical'; zIndex = 150; }
                 }
             }
-
-            return L.divIcon({ 
-                className: 'custom-posto-icon', 
-                html: `<i class="fas ${iconClass}" style="color: ${color}; font-size: ${size}px; text-shadow: 1px 1px 0 #fff; z-index:${zIndex};"></i>`, 
-                iconSize: [size, size], 
-                iconAnchor: [size/2, size], 
-                popupAnchor: [0, -size] 
-            }); 
+            return L.divIcon({ className: 'custom-posto-icon', html: `<i class="fas ${iconClass}" style="color: ${color}; font-size: ${size}px; text-shadow: 1px 1px 0 #fff; z-index:${zIndex};"></i>`, iconSize: [size, size], iconAnchor: [size/2, size], popupAnchor: [0, -size] }); 
         }
         
         function escolasIcon(feature) { 
-            let color = '#333333'; 
-            const iconClass = 'fa-school'; 
-            
+            let color = '#333333'; const iconClass = 'fa-school'; 
             if (feature && feature.properties && feature.properties['Dependênc']) {
                 const dep = feature.properties['Dependênc'].toString().toUpperCase();
-                if (dep.includes('MUNICIPAL')) color = '#FFB347'; 
-                else if (dep.includes('ESTADUAL')) color = '#28A745'; 
-                else if (dep.includes('PRIVADA')) color = '#6F42C1'; 
-                else if (dep.includes('FEDERAL')) color = '#007BFF'; 
+                if (dep.includes('MUNICIPAL')) color = '#FFB347'; else if (dep.includes('ESTADUAL')) color = '#28A745'; else if (dep.includes('PRIVADA')) color = '#6F42C1'; else if (dep.includes('FEDERAL')) color = '#007BFF'; 
             }
-
-            return L.divIcon({ 
-                className: 'custom-escola-icon', 
-                html: `<i class="fas ${iconClass}" style="color: ${color}; font-size: 16px; text-shadow: 1px 1px 0 #fff;"></i>`, 
-                iconSize: [16, 16], 
-                iconAnchor: [8, 16], 
-                popupAnchor: [0, -18] 
-            }); 
+            return L.divIcon({ className: 'custom-escola-icon', html: `<i class="fas ${iconClass}" style="color: ${color}; font-size: 16px; text-shadow: 1px 1px 0 #fff;"></i>`, iconSize: [16, 16], iconAnchor: [8, 16], popupAnchor: [0, -18] }); 
         }
 
         // =======================================================
@@ -856,21 +463,15 @@
         // =======================================================
         function createStyledPopupContent(title, props) {
             let html = `<div class="popup-header">${title}</div><div class="popup-data">`;
-            
             const displayFields = [
-                { key: 'TIPO', label: 'Tipo' },
-                { key: 'Categoria', label: 'Categoria' },
-                { key: 'Dependênc', label: 'Dependência' },
-                { key: 'Endereço', label: 'Endereço' },
-                { key: 'nome_bacia', label: 'Bacia' }
+                { key: 'Tipo', label: 'Tipo' }, { key: 'TIPO', label: 'Tipo' }, { key: 'tipo', label: 'Tipo' },
+                { key: 'Categoria', label: 'Categoria' }, { key: 'Dependênc', label: 'Dependência' },
+                { key: 'Endereço', label: 'Endereço' }, { key: 'nome_bacia', label: 'Bacia' },
+                { key: 'situacao', label: 'Situação' }
             ];
-
             for (const field of displayFields) {
-                if (props[field.key]) {
-                    html += `<p><strong>${field.label}:</strong> ${props[field.key]}</p>`;
-                }
+                if (props[field.key]) { html += `<p><strong>${field.label}:</strong> ${props[field.key]}</p>`; }
             }
-
             return html + "</div>";
         }
 
@@ -878,22 +479,47 @@
         // 6. LEGENDAS
         // =======================================================
 
+        function createMercadosLegend() {
+            if (mercadosLegend) return mercadosLegend;
+            mercadosLegend = L.control({ position: 'bottomright' });
+            mercadosLegend.onAdd = function() {
+                var div = L.DomUtil.create('div', 'info legend professional');
+                div.innerHTML = '<div class="legend-header">Abastecimento</div>';
+                var content = '<div class="legend-content">';
+                content += '<div class="legend-item"><div class="legend-color-box" style="background:#FF0000; border: 1px solid #8B0000;"></div><span>Mercado Público</span></div>';
+                content += '<div class="legend-item"><div class="legend-color-box" style="background:#008000; border: 1px solid #004d00;"></div><span>Feira Livre</span></div>';
+                content += '<div class="legend-item"><div class="legend-color-box" style="background:#800080; border: 1px solid #4B0082;"></div><span>Abatedouro</span></div>';
+                content += '</div>';
+                div.innerHTML += content;
+                return div;
+            };
+            return mercadosLegend;
+        }
+
+        // --- NOVA LEGENDA: ATERRO ---
+        function createAterroLegend() {
+            if (aterroLegend) return aterroLegend;
+            aterroLegend = L.control({ position: 'bottomright' });
+            aterroLegend.onAdd = function() {
+                var div = L.DomUtil.create('div', 'info legend professional');
+                div.innerHTML = '<div class="legend-header">Saneamento</div><div class="legend-content">';
+                div.innerHTML += '<div class="legend-item"><div class="legend-color-box" style="background:#795548; border: 1px dashed #3E2723;"></div><span>Aterro Sanitário</span></div></div>';
+                return div;
+            };
+            return aterroLegend;
+        }
+
         function createSaudeLegend() {
             if (saudeLegend) return saudeLegend;
             saudeLegend = L.control({ position: 'bottomright' });
             saudeLegend.onAdd = function() {
                 var div = L.DomUtil.create('div', 'info legend professional');
-                div.innerHTML = '<div class="legend-header">Saúde</div>';
-                
-                var content = '<div class="legend-content">';
-                content += '<div class="legend-item icon"><i class="fas fa-hospital" style="color:#007BFF; margin-right:8px;"></i><span>Hospital</span></div>';
-                content += '<div class="legend-item icon"><i class="fas fa-briefcase-medical" style="color:#DC143C; margin-right:8px;"></i><span>Serviço</span></div>';
-                content += '<div class="legend-item icon"><i class="fas fa-building" style="color:#FF8C00; margin-right:8px;"></i><span>Secretaria</span></div>';
-                content += '<div class="legend-item icon"><i class="fas fa-star-of-life" style="color:#9C27B0; margin-right:8px;"></i><span>Centro de Ref.</span></div>';
-                content += '<div class="legend-item icon"><i class="fas fa-clinic-medical" style="color:#008000; margin-right:8px;"></i><span>UBS / Posto</span></div>';
-                content += '</div>';
-                
-                div.innerHTML += content;
+                div.innerHTML = '<div class="legend-header">Saúde</div><div class="legend-content">';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-hospital" style="color:#007BFF; margin-right:8px;"></i><span>Hospital</span></div>';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-briefcase-medical" style="color:#DC143C; margin-right:8px;"></i><span>Serviço</span></div>';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-building" style="color:#FF8C00; margin-right:8px;"></i><span>Secretaria</span></div>';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-star-of-life" style="color:#9C27B0; margin-right:8px;"></i><span>Centro de Ref.</span></div>';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-clinic-medical" style="color:#008000; margin-right:8px;"></i><span>UBS / Posto</span></div></div>';
                 return div;
             };
             return saudeLegend;
@@ -904,15 +530,11 @@
             escolasLegend = L.control({ position: 'bottomright' });
             escolasLegend.onAdd = function() {
                 var div = L.DomUtil.create('div', 'info legend professional');
-                div.innerHTML = '<div class="legend-header">Unidades de Ensino</div>';
-                
-                var content = '<div class="legend-content">';
-                content += '<div class="legend-item icon"><i class="fas fa-school" style="color: #FFB347; margin-right:8px;"></i><span>Municipal</span></div>';
-                content += '<div class="legend-item icon"><i class="fas fa-school" style="color: #28A745; margin-right:8px;"></i><span>Estadual</span></div>';
-                content += '<div class="legend-item icon"><i class="fas fa-school" style="color: #6F42C1; margin-right:8px;"></i><span>Privada</span></div>';
-                content += '<div class="legend-item icon"><i class="fas fa-school" style="color: #007BFF; margin-right:8px;"></i><span>Federal</span></div>';
-                content += '</div>';
-                div.innerHTML += content;
+                div.innerHTML = '<div class="legend-header">Unidades de Ensino</div><div class="legend-content">';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-school" style="color: #FFB347; margin-right:8px;"></i><span>Municipal</span></div>';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-school" style="color: #28A745; margin-right:8px;"></i><span>Estadual</span></div>';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-school" style="color: #6F42C1; margin-right:8px;"></i><span>Privada</span></div>';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-school" style="color: #007BFF; margin-right:8px;"></i><span>Federal</span></div></div>';
                 return div;
             };
             return escolasLegend;
@@ -923,7 +545,6 @@
             bufferLegend = L.control({position:'bottomright'});
             bufferLegend.onAdd = () => {
                 let div = L.DomUtil.create('div', 'info legend professional');
-                // Atualizado ícone da legenda para bolinha CSS com borda
                 div.innerHTML = '<div class="legend-header">Creches</div><div class="legend-content"><div class="legend-item icon"><div style="width: 14px; height: 14px; background-color: #DC143C; border: 2px solid white; border-radius: 50%; box-sizing: border-box; display: inline-block; margin-right: 8px; box-shadow: 0 0 2px rgba(0,0,0,0.2);"></div><span>Creche</span></div><div class="legend-item"><div class="legend-color-box" style="background:#F5F5DC; border:1px solid #A0522D; border-radius:50%"></div><span>Raio 1km</span></div></div>';
                 return div;
             };
@@ -935,13 +556,10 @@
             pracasLegend = L.control({ position: 'bottomleft' });
             pracasLegend.onAdd = function() {
                 var div = L.DomUtil.create('div', 'info legend professional');
-                div.innerHTML = '<div class="legend-header">Lazer</div>';
-                var content = '<div class="legend-content">';
-                content += '<div class="legend-item"><div class="legend-color-box" style="background:#90EE90; border: 1px solid #3CB371;"></div><span>Praças</span></div>';
-                content += '<div class="legend-item"><div class="legend-color-box" style="background:#4169E1; border: 1px solid #191970;"></div><span>Parques</span></div>';
-                content += '<div class="legend-item"><div class="legend-color-box" style="background:#FFD700; border: 1px solid #DAA520;"></div><span>Calçadões</span></div>';
-                content += '</div>';
-                div.innerHTML += content;
+                div.innerHTML = '<div class="legend-header">Lazer</div><div class="legend-content">';
+                div.innerHTML += '<div class="legend-item"><div class="legend-color-box" style="background:#90EE90; border: 1px solid #3CB371;"></div><span>Praças</span></div>';
+                div.innerHTML += '<div class="legend-item"><div class="legend-color-box" style="background:#4169E1; border: 1px solid #191970;"></div><span>Parques</span></div>';
+                div.innerHTML += '<div class="legend-item"><div class="legend-color-box" style="background:#FFD700; border: 1px solid #DAA520;"></div><span>Calçadões</span></div></div>';
                 return div;
             };
             return pracasLegend;
@@ -952,13 +570,10 @@
             baciasLegend = L.control({ position: 'bottomleft' });
             baciasLegend.onAdd = function() {
                 var div = L.DomUtil.create('div', 'info legend professional');
-                div.innerHTML = '<div class="legend-header">Bacias Hidrográficas</div>';
-                var content = '<div class="legend-content">';
-                content += '<div class="legend-item"><div class="legend-color-box" style="background:#FFFFBA;"></div><span>Miriri</span></div>';
-                content += '<div class="legend-item"><div class="legend-color-box" style="background:#FFB3BA;"></div><span>Paraíba</span></div>';
-                content += '<div class="legend-item"><div class="legend-color-box" style="background:#BAE1FF;"></div><span>Gramame</span></div>';
-                content += '</div>';
-                div.innerHTML += content;
+                div.innerHTML = '<div class="legend-header">Bacias Hidrográficas</div><div class="legend-content">';
+                div.innerHTML += '<div class="legend-item"><div class="legend-color-box" style="background:#FFFFBA;"></div><span>Miriri</span></div>';
+                div.innerHTML += '<div class="legend-item"><div class="legend-color-box" style="background:#FFB3BA;"></div><span>Paraíba</span></div>';
+                div.innerHTML += '<div class="legend-item"><div class="legend-color-box" style="background:#BAE1FF;"></div><span>Gramame</span></div></div>';
                 return div;
             };
             return baciasLegend;
@@ -969,25 +584,20 @@
             itinerarioLegend = L.control({ position: 'bottomleft' });
             itinerarioLegend.onAdd = function() {
                 var div = L.DomUtil.create('div', 'info legend professional');
-                div.innerHTML = '<div class="legend-header">Itinerário</div>';
-                var content = '<div class="legend-content">';
-                content += '<div class="legend-item"><div class="legend-line" style="background:#00FF00; border: none; height: 4px; width: 20px;"></div><span>Linha Comum</span></div>';
-                content += '<div class="legend-item"><div class="legend-line" style="background:#A0522D; border: none; height: 4px; width: 20px;"></div><span>Linha Heitel</span></div>';
-                content += '</div>';
-                div.innerHTML += content;
+                div.innerHTML = '<div class="legend-header">Itinerário</div><div class="legend-content">';
+                div.innerHTML += '<div class="legend-item"><div class="legend-line" style="background:#00FF00; border: none; height: 4px; width: 20px;"></div><span>Linha Comum</span></div>';
+                div.innerHTML += '<div class="legend-item"><div class="legend-line" style="background:#A0522D; border: none; height: 4px; width: 20px;"></div><span>Linha Heitel</span></div></div>';
                 return div;
             };
             return itinerarioLegend;
         }
 
-        // Legenda Composta (Geral)
         function createGeralLegend() {
             if (window.geralLegend) return window.geralLegend;
             window.geralLegend = L.control({ position: 'topright' });
             window.geralLegend.onAdd = function() {
                 var div = L.DomUtil.create('div', 'info legend professional');
-                div.innerHTML = '<div class="legend-header">Geometrias Diversas</div>';
-                div.innerHTML += '<div class="legend-content" id="GeralLegendContent"></div>';
+                div.innerHTML = '<div class="legend-header">Geometrias Diversas</div><div class="legend-content" id="GeralLegendContent"></div>';
                 return div;
             };
             return window.geralLegend;
@@ -1000,20 +610,13 @@
                 if (!legendControl) legendControl = createFunc();
                 legendControl.addTo(mymap);
             } else {
-                if (legendControl) {
-                    mymap.removeControl(legendControl);
-                    legendControl = null; 
-                }
+                if (legendControl) { mymap.removeControl(legendControl); legendControl = null; }
             }
             return legendControl; 
         }
 
         function updateGeralLegend(layerName, show) {
-            if (show && !window.geralLegend) {
-                window.geralLegend = createGeralLegend();
-                window.geralLegend.addTo(mymap);
-            }
-            
+            if (show && !window.geralLegend) { window.geralLegend = createGeralLegend(); window.geralLegend.addTo(mymap); }
             const contentDiv = document.getElementById('GeralLegendContent');
             if (!contentDiv) return;
 
@@ -1031,22 +634,13 @@
 
             if (show) {
                 if (!item && styles[layerName]) {
-                    item = document.createElement('div');
-                    item.className = 'legend-item';
-                    item.id = itemId;
-                    item.innerHTML = `${styles[layerName].html}<span>${styles[layerName].text}</span>`;
-                    contentDiv.appendChild(item);
+                    item = document.createElement('div'); item.className = 'legend-item'; item.id = itemId;
+                    item.innerHTML = `${styles[layerName].html}<span>${styles[layerName].text}</span>`; contentDiv.appendChild(item);
                 }
             } else {
-                if (item) {
-                    contentDiv.removeChild(item);
-                }
+                if (item) { contentDiv.removeChild(item); }
             }
-
-            if (contentDiv.children.length === 0 && window.geralLegend) {
-                mymap.removeControl(window.geralLegend);
-                window.geralLegend = null; 
-            }
+            if (contentDiv.children.length === 0 && window.geralLegend) { mymap.removeControl(window.geralLegend); window.geralLegend = null; }
         }
 
 
@@ -1055,181 +649,116 @@
         // =======================================================
         
         function loadGenericLayer(path, toggleId, styleFunc, onEachFunc, layerVarName, legendManager) {
-            let toggle = document.getElementById(toggleId);
-            let checked = toggle.checked;
-
-            if (window[layerVarName]) { 
-                if (checked) window[layerVarName].addTo(mymap); 
-                else mymap.removeLayer(window[layerVarName]); 
-            }
+            let toggle = document.getElementById(toggleId); let checked = toggle.checked;
+            if (window[layerVarName]) { if (checked) window[layerVarName].addTo(mymap); else mymap.removeLayer(window[layerVarName]); }
             if (!checked && !window[layerVarName]) {
-                if (typeof legendManager === 'function') {
-                    const actualLegendVarName = layerVarName.replace('Layer', 'Legend');
-                    window[actualLegendVarName] = toggleLegend(window[actualLegendVarName], legendManager, checked);
-                }
+                if (typeof legendManager === 'function') { const actualLegendVarName = layerVarName.replace('Layer', 'Legend'); window[actualLegendVarName] = toggleLegend(window[actualLegendVarName], legendManager, checked); }
                 return;
             }
-            
-            if (typeof legendManager === 'function') {
-                const actualLegendVarName = layerVarName.replace('Layer', 'Legend');
-                window[actualLegendVarName] = toggleLegend(window[actualLegendVarName], legendManager, checked);
-            } else if (legendManager === 'geral') {
-                updateGeralLegend(layerVarName, checked);
-            }
-
+            if (typeof legendManager === 'function') { const actualLegendVarName = layerVarName.replace('Layer', 'Legend'); window[actualLegendVarName] = toggleLegend(window[actualLegendVarName], legendManager, checked); } 
+            else if (legendManager === 'geral') { updateGeralLegend(layerVarName, checked); }
             if (window[layerVarName]) return;
-
-            fetch(path).then(r => r.json()).then(d => {
-                window[layerVarName] = L.geoJson(d, { style: styleFunc, onEachFeature: onEachFunc });
-                if (checked) window[layerVarName].addTo(mymap);
-
-            }).catch(e => console.log(`Erro ao carregar ${layerVarName}:`, e));
+            fetch(path).then(r => r.json()).then(d => { window[layerVarName] = L.geoJson(d, { style: styleFunc, onEachFeature: onEachFunc }); if (checked) window[layerVarName].addTo(mymap); }).catch(e => console.log(`Erro ao carregar ${layerVarName}:`, e));
         }
 
-        // Limites
+        // Limites & Bairros
         function loadLimites() {
             let checked = document.getElementById('limitesLayerToggle').checked;
-            if (limitesLayer) { 
-                if(checked) limitesLayer.addTo(mymap); else mymap.removeLayer(limitesLayer); 
-                updateGeralLegend('limitesLayer', checked);
-                return;
-            }
+            if (limitesLayer) { if(checked) limitesLayer.addTo(mymap); else mymap.removeLayer(limitesLayer); updateGeralLegend('limitesLayer', checked); return; }
             if (!checked) return;
-            fetch('data/Limite_municipal.geojson').then(r=>r.json()).then(d => {
-                limitesLayer = L.geoJson(d, { style: limitesStyle }).addTo(mymap);
-                updateGeralLegend('limitesLayer', checked);
-            });
+            fetch('data/Limite_municipal.geojson').then(r=>r.json()).then(d => { limitesLayer = L.geoJson(d, { style: limitesStyle }).addTo(mymap); updateGeralLegend('limitesLayer', checked); });
         }
-
-        // Bairros
         function loadBairros() {
             let checked = document.getElementById('bairrosLayerToggle').checked;
-            if (bairrosLayer) { 
-                if(checked) bairrosLayer.addTo(mymap); else mymap.removeLayer(bairrosLayer); 
-                if(bairrosLayer) bairrosLayer.eachLayer(l => checked ? l.openTooltip() : l.closeTooltip());
-                updateGeralLegend('bairrosLayer', checked);
-                return; 
-            }
+            if (bairrosLayer) { if(checked) bairrosLayer.addTo(mymap); else mymap.removeLayer(bairrosLayer); if(bairrosLayer) bairrosLayer.eachLayer(l => checked ? l.openTooltip() : l.closeTooltip()); updateGeralLegend('bairrosLayer', checked); return; }
             if (!checked) return;
             fetch('data/Bairros.geojson').then(r=>r.json()).then(d => {
-                bairrosLayer = L.geoJson(d, { 
-                    style: bairrosStyle, 
-                    onEachFeature: (f,l) => {
-                        l.bindPopup(createStyledPopupContent("Bairro", f.properties));
-                        if(f.properties.Nome) l.bindTooltip(f.properties.Nome, {permanent:true, className:'bairro-label', direction:'center'});
-                    }
-                }).addTo(mymap);
+                bairrosLayer = L.geoJson(d, { style: bairrosStyle, onEachFeature: (f,l) => { l.bindPopup(createStyledPopupContent("Bairro", f.properties)); if(f.properties.Nome) l.bindTooltip(f.properties.Nome, {permanent:true, className:'bairro-label', direction:'center'}); } }).addTo(mymap);
                 updateGeralLegend('bairrosLayer', checked);
             });
         }
         
-        // Escolas
+        // Equipamentos
         function loadEscolasGeoJSON() {
             let checked = document.getElementById('escolasLayerToggle').checked;
-            if (escolasLayer) {
-                if (checked) escolasLayer.addTo(mymap); else mymap.removeLayer(escolasLayer);
-                escolasLegend = toggleLegend(escolasLegend, createEscolasLegend, checked); 
-                return;
-            }
+            if (escolasLayer) { if (checked) escolasLayer.addTo(mymap); else mymap.removeLayer(escolasLayer); escolasLegend = toggleLegend(escolasLegend, createEscolasLegend, checked); return; }
             if(!checked) return;
-
-            fetch('data/escolas.geojson')
-                .then(r => r.json())
-                .then(data => {
-                    escolasLayer = L.geoJson(data, {
-                        pointToLayer: (f, latlng) => L.marker(latlng, { icon: escolasIcon(f) }),
-                        onEachFeature: (f, l) => l.bindPopup(createStyledPopupContent(f.properties.Escola || "Escola", f.properties))
-                    });
-                    if (checked) {
-                        escolasLayer.addTo(mymap);
-                        escolasLegend = toggleLegend(escolasLegend, createEscolasLegend, true); 
-                    }
-                });
-        }
-
-        // --- CRECHES ---
-        function loadCreches() {
-            let checked = document.getElementById('crechesLayerToggle').checked;
-            if(crechesLayer) {
-                if(checked) { crechesLayer.addTo(mymap); bufferCrechesLayer.addTo(mymap); }
-                else { mymap.removeLayer(crechesLayer); mymap.removeLayer(bufferCrechesLayer); }
-                bufferLegend = toggleLegend(bufferLegend, createBufferLegend, checked); 
-                return;
-            }
-            if(!checked) return;
-
-            fetch('data/creches.geojson').then(r=>r.json()).then(d => {
-                const validFeatures = d.features.filter(f => 
-                    f.geometry && 
-                    Array.isArray(f.geometry.coordinates) && 
-                    f.geometry.coordinates.length >= 2 &&
-                    !isNaN(f.geometry.coordinates[0]) &&
-                    !isNaN(f.geometry.coordinates[1])
-                );
-
-                if (validFeatures.length > 0) {
-                    try {
-                        let buffs = validFeatures.map(f => turf.buffer(turf.point(f.geometry.coordinates), 1, {units:'kilometers'}));
-                        bufferCrechesLayer = L.geoJson(turf.featureCollection(buffs), { style: bufferCrechesStyle });
-                    } catch (err) {
-                        console.error("Erro processando buffer:", err);
-                        bufferCrechesLayer = L.layerGroup([]);
-                    }
-                } else {
-                    bufferCrechesLayer = L.layerGroup([]);
-                }
-
-                crechesLayer = L.geoJson(d, {
-                    pointToLayer: (f,l) => L.marker(l, {icon: crechesIcon()}),
-                    onEachFeature: (f,l) => l.bindPopup(createStyledPopupContent("Creche", f.properties))
-                });
-                
-                if(checked){
-                    bufferCrechesLayer.addTo(mymap);
-                    crechesLayer.addTo(mymap);
-                    bufferLegend = toggleLegend(bufferLegend, createBufferLegend, true); 
-                    
-                    if (validFeatures.length > 0) {
-                        const c = validFeatures[0].geometry.coordinates;
-                        if (c[1] < -6 && c[1] > -8) mymap.flyTo([c[1], c[0]], 13);
-                    }
-                }
-            }).catch(e => {
-                console.error("Erro Creches:", e);
-                document.getElementById('crechesLayerToggle').checked = false;
+            fetch('data/escolas.geojson').then(r => r.json()).then(data => {
+                escolasLayer = L.geoJson(data, { pointToLayer: (f, latlng) => L.marker(latlng, { icon: escolasIcon(f) }), onEachFeature: (f, l) => l.bindPopup(createStyledPopupContent(f.properties.Escola || "Escola", f.properties)) });
+                if (checked) { escolasLayer.addTo(mymap); escolasLegend = toggleLegend(escolasLegend, createEscolasLegend, true); }
             });
         }
-        
-        // --- SAÚDE ---
+        function loadCreches() {
+            let checked = document.getElementById('crechesLayerToggle').checked;
+            if(crechesLayer) { if(checked) { crechesLayer.addTo(mymap); bufferCrechesLayer.addTo(mymap); } else { mymap.removeLayer(crechesLayer); mymap.removeLayer(bufferCrechesLayer); } bufferLegend = toggleLegend(bufferLegend, createBufferLegend, checked); return; }
+            if(!checked) return;
+            fetch('data/creches.geojson').then(r=>r.json()).then(d => {
+                const validFeatures = d.features.filter(f => f.geometry && Array.isArray(f.geometry.coordinates) && f.geometry.coordinates.length >= 2);
+                if (validFeatures.length > 0) { try { let buffs = validFeatures.map(f => turf.buffer(turf.point(f.geometry.coordinates), 1, {units:'kilometers'})); bufferCrechesLayer = L.geoJson(turf.featureCollection(buffs), { style: bufferCrechesStyle }); } catch (err) { bufferCrechesLayer = L.layerGroup([]); } } else { bufferCrechesLayer = L.layerGroup([]); }
+                crechesLayer = L.geoJson(d, { pointToLayer: (f,l) => L.marker(l, {icon: crechesIcon()}), onEachFeature: (f,l) => l.bindPopup(createStyledPopupContent("Creche", f.properties)) });
+                if(checked){ bufferCrechesLayer.addTo(mymap); crechesLayer.addTo(mymap); bufferLegend = toggleLegend(bufferLegend, createBufferLegend, true); if (validFeatures.length > 0) { const c = validFeatures[0].geometry.coordinates; if (c[1] < -6 && c[1] > -8) mymap.flyTo([c[1], c[0]], 13); } }
+            }).catch(e => { document.getElementById('crechesLayerToggle').checked = false; });
+        }
         function loadSaude() {
             let checked = document.getElementById('postosSaudeLayerToggle').checked;
-            if (postosSaudeLayer) { 
-                if (checked) postosSaudeLayer.addTo(mymap); 
-                else mymap.removeLayer(postosSaudeLayer); 
-                saudeLegend = toggleLegend(saudeLegend, createSaudeLegend, checked); 
-                return; 
-            }
+            if (postosSaudeLayer) { if (checked) postosSaudeLayer.addTo(mymap); else mymap.removeLayer(postosSaudeLayer); saudeLegend = toggleLegend(saudeLegend, createSaudeLegend, checked); return; }
             if (!checked) return;
+            fetch('data/saude_santarita.geojson').then(r => r.json()).then(d => {
+                postosSaudeLayer = L.geoJson(d, { pointToLayer: (f,l) => L.marker(l, {icon: postosSaudeIcon(f)}), onEachFeature: (f,l) => l.bindPopup(createStyledPopupContent(f.properties.Nome||"Unidade de Saúde", f.properties)) }).addTo(mymap);
+                saudeLegend = toggleLegend(saudeLegend, createSaudeLegend, true); 
+            }).catch(e => { document.getElementById('postosSaudeLayerToggle').checked = false; });
+        }
 
-            console.log("Tentando carregar data/saude_santarita.geojson...");
-
-            fetch('data/saude_santarita.geojson')
-                .then(r => {
-                    if (!r.ok) throw new Error("Erro HTTP " + r.status);
-                    return r.json();
-                })
-                .then(d => {
-                    postosSaudeLayer = L.geoJson(d, {
-                        pointToLayer: (f,l) => L.marker(l, {icon: postosSaudeIcon(f)}),
-                        onEachFeature: (f,l) => l.bindPopup(createStyledPopupContent(f.properties.Nome||"Unidade de Saúde", f.properties))
-                    }).addTo(mymap);
-                    saudeLegend = toggleLegend(saudeLegend, createSaudeLegend, true); 
-                })
-                .catch(e => {
-                    console.error("ERRO CRÍTICO SAÚDE:", e);
-                    alert("Erro ao carregar a camada de Saúde. Verifique o console (F12) para detalhes.");
-                    document.getElementById('postosSaudeLayerToggle').checked = false; 
+        // --- CARREGAMENTO DE MERCADOS (SÓ NOME E BAIRRO) ---
+        function loadMercados() {
+            var toggleId = 'mercadosLayerToggle';
+            var isChecked = document.getElementById(toggleId).checked;
+            if (mercadosLayer) {
+                if (isChecked) { mercadosLayer.addTo(mymap); mercadosLegend = toggleLegend(mercadosLegend, createMercadosLegend, true); } 
+                else { mymap.removeLayer(mercadosLayer); mercadosLegend = toggleLegend(mercadosLegend, createMercadosLegend, false); }
+                return;
+            }
+            if (!isChecked) return;
+            fetch('data/mercados_feiras_matadouros.geojson').then(response => response.json()).then(data => {
+                mercadosLayer = L.geoJson(data, {
+                    style: mercadosStyle, 
+                    onEachFeature: function(feature, layer) {
+                        var p = feature.properties;
+                        var nome = p.Nome || p.nome || p.NOME || p.Tipo || "Local";
+                        var bairro = p.Bairro || p.bairro || p.BAIRRO || "Não informado";
+                        var popupContent = `<div class="popup-header">${nome}</div><div class="popup-data"><p style="margin-top:10px; font-size:1.1em;"><strong>Bairro:</strong> ${bairro}</p></div>`;
+                        layer.bindPopup(popupContent);
+                    }
                 });
+                mercadosLayer.addTo(mymap);
+                mercadosLegend = toggleLegend(mercadosLegend, createMercadosLegend, true);
+            }).catch(err => { document.getElementById(toggleId).checked = false; });
+        }
+
+        // --- NOVO LOADER: ATERRO SANITÁRIO ---
+        function loadAterro() {
+            var toggleId = 'aterroLayerToggle';
+            var isChecked = document.getElementById(toggleId).checked;
+            if (aterroLayer) {
+                if (isChecked) { aterroLayer.addTo(mymap); aterroLegend = toggleLegend(aterroLegend, createAterroLegend, true); } 
+                else { mymap.removeLayer(aterroLayer); aterroLegend = toggleLegend(aterroLegend, createAterroLegend, false); }
+                return;
+            }
+            if (!isChecked) return;
+            fetch('data/aterro_sanitario.geojson').then(response => response.json()).then(data => {
+                aterroLayer = L.geoJson(data, {
+                    style: aterroStyle, 
+                    pointToLayer: (f,l) => L.marker(l, {icon: aterroIcon()}), // Garante funcionamento se for ponto
+                    onEachFeature: function(feature, layer) {
+                        var p = feature.properties;
+                        var nome = p.Nome || p.nome || "Aterro Sanitário";
+                        var popupContent = `<div class="popup-header">${nome}</div><div class="popup-data"><p>Área de Destinação Final</p></div>`;
+                        layer.bindPopup(popupContent);
+                    }
+                });
+                aterroLayer.addTo(mymap);
+                aterroLegend = toggleLegend(aterroLegend, createAterroLegend, true);
+            }).catch(err => { console.error("Erro Aterro:", err); document.getElementById(toggleId).checked = false; });
         }
 
         // =======================================================
@@ -1239,7 +768,11 @@
         document.getElementById('bairrosLayerToggle').addEventListener('change', loadBairros);
         document.getElementById('escolasLayerToggle').addEventListener('change', loadEscolasGeoJSON);
         document.getElementById('crechesLayerToggle').addEventListener('change', loadCreches); 
-        document.getElementById('postosSaudeLayerToggle').addEventListener('change', loadSaude); 
+        document.getElementById('postosSaudeLayerToggle').addEventListener('change', loadSaude);
+        document.getElementById('mercadosLayerToggle').addEventListener('change', loadMercados);
+        
+        // NOVO EVENT LISTENER
+        document.getElementById('aterroLayerToggle').addEventListener('change', loadAterro);
         
         document.getElementById('setoresLayerToggle').addEventListener('change', () => loadGenericLayer('data/setores.geojson', 'setoresLayerToggle', setoresStyle, (f,l)=>l.bindPopup("Setor"), 'setoresLayer', 'geral'));
         document.getElementById('ruidoAeroportoLayerToggle').addEventListener('change', () => loadGenericLayer('data/ruido_urbano.geojson', 'ruidoAeroportoLayerToggle', styleRuido, (f,l)=>l.bindPopup("Ruído"), 'ruidoAeroportoLayer', 'geral'));
@@ -1256,10 +789,7 @@
         loadLimites();
         
         mymap.on('zoomend', function() {
-            if(bairrosLayer) {
-                if(mymap.getZoom() <= MAX_ZOOM_FOR_LABELS) bairrosLayer.eachLayer(l => l.openTooltip());
-                else bairrosLayer.eachLayer(l => l.closeTooltip());
-            }
+            if(bairrosLayer) { if(mymap.getZoom() <= MAX_ZOOM_FOR_LABELS) bairrosLayer.eachLayer(l => l.openTooltip()); else bairrosLayer.eachLayer(l => l.closeTooltip()); }
         });
 
     </script>
