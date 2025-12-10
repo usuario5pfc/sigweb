@@ -8,9 +8,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://ppete2.github.io/Leaflet.PolylineMeasure/Leaflet.PolylineMeasure.css" />
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+    <script src="https://ppete2.github.io/Leaflet.PolylineMeasure/Leaflet.PolylineMeasure.js"></script>
     
     <style>
         /* Variáveis CSS */
@@ -25,431 +27,222 @@
             --sombra-media: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
-        /* Estilos Globais */
-        html, body {
-            height: 100%; 
-        }
-
+        html, body { height: 100%; }
         body {
             font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background-color: var(--cor-fundo);
-            display: flex;
-            height: 100%;
             overflow: hidden; 
         }
 
-        /* Estilos do Mapa */
         #mapid {
-            flex-grow: 1;
-            height: 100%;
-            z-index: 0;
+            width: 100%; height: 100%;
+            z-index: 0; position: absolute; top: 0; left: 0;
+            background-color: #ffffff;
         }
 
-        /* Estilos da Sidebar */
+        /* BOTÃO DE ABRIR O MENU */
+        #sidebarToggleBtn {
+            position: absolute; top: 20px; left: 20px; z-index: 1000;
+            background-color: var(--cor-principal); color: white;
+            border: none; width: 45px; height: 45px; border-radius: 5px;
+            box-shadow: var(--sombra-media); cursor: pointer;
+            font-size: 1.2em; transition: background-color 0.3s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #sidebarToggleBtn:hover { background-color: var(--cor-secundaria); }
+
+        /* SIDEBAR */
         .sidebar {
-            width: 300px;
+            position: absolute; top: 0; left: -320px; 
+            width: 300px; height: 100%;
             background-color: var(--cor-texto-claro);
-            box-shadow: var(--sombra-media);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto; 
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+            z-index: 2000; display: flex; flex-direction: column;
+            transition: left 0.4s ease-in-out; 
+        }
+        .sidebar.active { left: 0; }
+
+        .close-sidebar-btn {
+            position: absolute; top: 15px; right: 15px;
+            background: none; border: none; color: white;
+            font-size: 1.2em; cursor: pointer;
         }
 
-        /* Cabeçalho da Sidebar */
         .sidebar-header {
-            padding: 15px 20px;
-            background-color: var(--cor-principal);
-            color: var(--cor-texto-claro);
-            border-bottom: 2px solid var(--cor-secundaria);
+            padding: 15px 20px; background-color: var(--cor-principal);
+            color: var(--cor-texto-claro); border-bottom: 2px solid var(--cor-secundaria);
+            position: relative;
+        }
+        .sidebar-header img { max-height: 50px; margin-right: 15px; border-radius: 4px; }
+        .sidebar-header h3 { margin: 0; font-weight: 600; font-size: 1.2em; }
+        
+        .sidebar-footer {
+            margin-top: auto; padding: 20px; font-size: 0.7em;
+            text-align: center; color: #777; border-top: 1px solid var(--cor-borda);
+            background-color: #f9f9f9;
         }
 
-        .sidebar-header img {
-            max-height: 50px;
-            margin-right: 15px;
-            border-radius: 4px;
-        }
-
-        .sidebar-header h3 {
-            margin: 0;
-            font-weight: 600;
-            font-size: 1.2em;
-        }
-
-        /* Estilos do Acordeão (Menu de Camadas) */
-        .accordion-item {
-            border-bottom: 1px solid var(--cor-borda);
-        }
+        .accordion-item { border-bottom: 1px solid var(--cor-borda); }
+        .accordion-container { overflow-y: auto; flex-grow: 1; }
 
         .accordion-title {
-            padding: 15px 20px;
-            background-color: var(--cor-fundo);
-            color: var(--cor-texto-escuro);
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 15px 20px; background-color: var(--cor-fundo);
+            color: var(--cor-texto-escuro); font-weight: 600; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
             transition: background-color 0.2s;
         }
-
-        .accordion-title:hover {
-            background-color: #e0e0e0;
-        }
+        .accordion-title:hover { background-color: #e0e0e0; }
 
         .accordion-content {
-            max-height: 0;
-            overflow: hidden;
+            max-height: 0; overflow: hidden;
             transition: max-height 0.4s ease-in-out;
-            padding: 0 20px;
-            background-color: var(--cor-texto-claro);
+            padding: 0 20px; background-color: var(--cor-texto-claro);
         }
+        .accordion-item.active .accordion-content { max-height: 500px; }
+        .accordion-item.active .accordion-title i { transform: rotate(180deg); }
 
-        .accordion-item.active .accordion-content {
-            max-height: 500px; 
-        }
-
-        .accordion-item.active .accordion-title i {
-            transform: rotate(180deg);
-        }
-
-        /* Estilos dos Itens de Camada (dentro do Acordeão) */
         .layer-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-top: 1px solid var(--cor-borda);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0; border-top: 1px solid var(--cor-borda);
         }
-        
-        .layer-item:first-child {
-            border-top: none;
+        .layer-item:first-child { border-top: none; }
+        .layer-item span { font-size: 0.9em; }
+
+        /* CONTROLE DE PESQUISA */
+        .custom-search-control {
+            background-color: white; padding: 5px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.65); border-radius: 4px;
+            position: absolute !important; top: 10px; right: 55px; margin: 0 !important;
+            z-index: 800; display: flex; align-items: center;
         }
 
-        .layer-item span {
-            font-size: 0.9em;
-        }
-
-        /* Estilos do Switch (Toggle) */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 24px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
+        .switch { position: relative; display: inline-block; width: 40px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: 0.4s;
-            border-radius: 24px;
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: 0.4s; border-radius: 24px;
         }
-
         .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: 0.4s;
-            border-radius: 50%;
+            position: absolute; content: ""; height: 18px; width: 18px;
+            left: 3px; bottom: 3px; background-color: white;
+            transition: 0.4s; border-radius: 50%;
         }
+        input:checked + .slider { background-color: var(--cor-principal); }
+        input:checked + .slider:before { transform: translateX(16px); }
 
-        input:checked + .slider {
-            background-color: var(--cor-principal);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(16px);
-        }
-
-        /* Estilo para a legenda customizada do Leaflet */
-        .legend {
-            line-height: 18px;
-            color: #555;
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: var(--sombra-leve);
-        }
-        
-        /* ================================================= */
-        /* NOVO ESTILO PARA LEGENDAS PROFISSIONAIS (INÍCIO) */
-        /* ================================================= */
         .legend.professional {
-            background: white;
-            padding: 0; 
-            border-radius: 6px;
+            background: white; padding: 0; border-radius: 6px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
-            font-size: 0.95em;
-            width: auto; /* Pode ser ajustado conforme a necessidade, mas auto é mais flexível */
-            min-width: 180px;
+            font-size: 0.95em; width: auto; min-width: 180px;
         }
-
         .legend-header {
-            background-color: var(--cor-principal); 
-            color: var(--cor-texto-claro); 
-            padding: 8px 15px;
-            font-weight: 700;
-            border-top-left-radius: 6px;
-            border-top-right-radius: 6px;
-            text-align: left;
-            font-size: 1.1em;
+            background-color: var(--cor-principal); color: var(--cor-texto-claro); 
+            padding: 8px 15px; font-weight: 700; border-top-left-radius: 6px;
+            border-top-right-radius: 6px; text-align: left; font-size: 1.1em;
         }
+        .legend-content { padding: 10px 15px; }
+        .legend-item { display: flex; align-items: center; margin-bottom: 8px; }
+        .legend-item.icon { align-items: center; line-height: 1.2; }
 
-        .legend-content {
-            padding: 10px 15px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        /* Cor de fundo para itens ícone (Saúde/Creche) */
-        .legend-item.icon {
-            align-items: center;
-            line-height: 1.2;
-        }
-
-        /* Representação de cor para Polígonos (Preenchimento) */
         .legend-color-box {
-            width: 20px;
-            height: 14px;
-            border: 1px solid #aaa; 
-            margin-right: 10px;
-            opacity: 0.85; 
-            box-sizing: border-box; 
+            width: 20px; height: 14px; border: 1px solid #aaa; 
+            margin-right: 10px; opacity: 0.85; box-sizing: border-box; 
         }
-        
-        /* Representação de cor para Linhas (Itinerário) */
         .legend-line {
-            width: 20px;
-            height: 4px;
-            border: 1px solid #333; 
-            margin-right: 10px;
-            opacity: 1;
-            box-sizing: border-box; 
+            width: 20px; height: 4px; border: 1px solid #333; 
+            margin-right: 10px; opacity: 1; box-sizing: border-box; 
         }
-        
-        /* Representação de Linha Tracejada (Ruído/Limites) */
         .legend-dash-box {
-            width: 20px;
-            height: 4px;
-            margin-right: 10px;
-            opacity: 1;
-            border: 2px dashed;
-            box-sizing: border-box; 
+            width: 20px; height: 4px; margin-right: 10px; opacity: 1;
+            border: 2px dashed; box-sizing: border-box; 
         }
-        /* ================================================= */
-        /* NOVO ESTILO PARA LEGENDAS PROFISSIONAIS (FIM) */
-        /* ================================================= */
 
-        /* Rótulos de Bairro Permanentes COM MÁSCARA/CONTORNO */
         .bairro-label {
-            background: transparent;
-            border: none;
-            box-shadow: none;
-            font-weight: 700; 
-            font-size: 14px; 
-            color: #333; 
+            background: transparent; border: none; box-shadow: none;
+            font-weight: 700; font-size: 14px; color: #333; 
             text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff; 
-            pointer-events: none; 
-            white-space: nowrap; 
-            text-align: center;
+            pointer-events: none; white-space: nowrap; text-align: center;
         }
         
-        /* Estilo para o ícone de creche */
-        .custom-creche-icon {
-            background: none !important;
-            border: none !important;
-            z-index: 100;
-        }
-        
-        /* Estilos para os novos ícones de saúde */
-        .custom-hospital-icon, .custom-posto-icon {
-            background: none !important;
-            border: none !important;
-            z-index: 100;
+        .custom-creche-icon, .custom-escola-icon, .custom-posto-icon, .custom-aterro-icon {
+            background: none !important; border: none !important; z-index: 100;
         }
 
-        /* ==================================== */
-        /* Estilo para o Popup (Aprimorado) */
-        /* ==================================== */
         .leaflet-popup-content-wrapper {
-            background: var(--cor-texto-claro); 
-            color: var(--cor-texto-escuro); 
-            border-radius: 8px;
-            padding: 1px; 
-            box-shadow: var(--sombra-media);
+            background: var(--cor-texto-claro); color: var(--cor-texto-escuro); 
+            border-radius: 8px; padding: 1px; box-shadow: var(--sombra-media);
         }
-
-        .leaflet-popup-content {
-            margin: 15px 15px 10px 15px; 
-            font-size: 0.9em;
-        }
-
+        .leaflet-popup-content { margin: 15px 15px 10px 15px; font-size: 0.9em; }
         .popup-header {
-            background-color: var(--cor-principal); 
-            color: var(--cor-texto-claro); 
-            padding: 8px 15px;
-            margin: -15px -15px 10px -15px; 
-            border-top-left-radius: 6px;
-            border-top-right-radius: 6px;
-            font-size: 1.1em;
-            font-weight: 700;
-            text-align: center;
+            background-color: var(--cor-principal); color: var(--cor-texto-claro); 
+            padding: 8px 15px; margin: -15px -15px 10px -15px; 
+            border-top-left-radius: 6px; border-top-right-radius: 6px;
+            font-size: 1.1em; font-weight: 700; text-align: center;
         }
-
-        .popup-data strong {
-            color: var(--cor-secundaria); 
-            font-weight: 600;
+        .popup-data strong { color: var(--cor-secundaria); font-weight: 600; }
+        .popup-data p { margin: 5px 0; }
+        
+        .leaflet-control-scale-line {
+            border: 2px solid #777; border-top: none; line-height: 1.1;
+            padding: 2px 5px 1px; font-size: 11px; white-space: nowrap;
+            overflow: hidden; box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.8); box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
-        .popup-data p {
-            margin: 5px 0;
-        }
+        .polyline-measure-unicode-icon { font-size: 18px !important; color: #333; }
 
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
+    <button id="sidebarToggleBtn" title="Abrir Camadas"><i class="fas fa-layer-group"></i></button>
+
+    <div class="sidebar" id="sidebarMenu">
         <div class="sidebar-header">
             <img src="srlogo.png" alt="Logo Santa Rita">
-            <h3>SANTA RITA | SIG</h3>
+            <button class="close-sidebar-btn" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
         </div>
 
         <div class="accordion-container">
             <div class="accordion-item active">
-                <div class="accordion-title">
-                    ARQUIVOS GERAIS
-                    <i class="fas fa-chevron-up"></i>
-                </div>
+                <div class="accordion-title">ARQUIVOS GERAIS <i class="fas fa-chevron-up"></i></div>
                 <div class="accordion-content">
-                    
-                    <div class="layer-item">
-                        <span>Limites Municipais</span>
-                        <label class="switch">
-                            <input type="checkbox" id="limitesLayerToggle" checked> 
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="layer-item">
-                        <span>Bairros</span>
-                        <label class="switch">
-                            <input type="checkbox" id="bairrosLayerToggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    
-                    <div class="layer-item">
-                        <span>Setores Censitários</span>
-                        <label class="switch">
-                            <input type="checkbox" id="setoresLayerToggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="layer-item">
-                        <span>Ruído do Aeroporto</span>
-                        <label class="switch">
-                            <input type="checkbox" id="ruidoAeroportoLayerToggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    
-                    <div class="layer-item">
-                        <span>Zona Urbana</span>
-                        <label class="switch">
-                            <input type="checkbox" id="zonaUrbanaLayerToggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    
+                    <div class="layer-item"><span>Limites Municipais</span><label class="switch"><input type="checkbox" id="limitesLayerToggle" checked><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Bairros</span><label class="switch"><input type="checkbox" id="bairrosLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Setores Censitários</span><label class="switch"><input type="checkbox" id="setoresLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Ruído do Aeroporto</span><label class="switch"><input type="checkbox" id="ruidoAeroportoLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Zona Urbana</span><label class="switch"><input type="checkbox" id="zonaUrbanaLayerToggle"><span class="slider"></span></label></div>
                 </div>
             </div>
 
             <div class="accordion-item">
-                <div class="accordion-title">
-                    EQUIPAMENTOS MUNICIPAIS
-                    <i class="fas fa-chevron-down"></i>
-                </div>
+                <div class="accordion-title">EQUIPAMENTOS MUNICIPAIS <i class="fas fa-chevron-down"></i></div>
                 <div class="accordion-content">
-                    <div class="layer-item"><span>Escolas Municipais</span><label class="switch"><input type="checkbox" id="escolasLayerToggle"><span class="slider"></span></label></div>
-                    <div class="layer-item">
-                        <span>Creches</span>
-                        <label class="switch">
-                            <input type="checkbox" id="crechesLayerToggle"> 
-                            <span class="slider"></span>
-                        </label>
-                    </div>
+                    <div class="layer-item"><span>Unidades de Ensino</span><label class="switch"><input type="checkbox" id="escolasLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Creches</span><label class="switch"><input type="checkbox" id="crechesLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Postos de Saúde / Hospitais</span><label class="switch"><input type="checkbox" id="postosSaudeLayerToggle"><span class="slider"></span></label></div>
+                    
+                    <div class="layer-item"><span>Mercados e Feiras</span><label class="switch"><input type="checkbox" id="mercadosLayerToggle"><span class="slider"></span></label></div>
+                    
+                    <div class="layer-item"><span>Aterro Sanitário</span><label class="switch"><input type="checkbox" id="aterroLayerToggle"><span class="slider"></span></label></div>
                     <div class="layer-item"><span>Centros Culturais</span><label class="switch"><input type="checkbox" id="culturaisLayerToggle"><span class="slider"></span></label></div>
-                    <div class="layer-item">
-                        <span>Praças e Parques</span>
-                        <label class="switch">
-                            <input type="checkbox" id="pracasLayerToggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    
-                    <div class="layer-item">
-                        <span>Postos de Saúde</span>
-                        <label class="switch">
-                            <input type="checkbox" id="postosSaudeLayerToggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    </div>
+                    <div class="layer-item"><span>Praças e Parques</span><label class="switch"><input type="checkbox" id="pracasLayerToggle"><span class="slider"></span></label></div>
+                </div>
             </div>
 
             <div class="accordion-item">
-                <div class="accordion-title">
-                    MOBILIDADE URBANA
-                    <i class="fas fa-chevron-down"></i>
-                </div>
+                <div class="accordion-title">MOBILIDADE URBANA <i class="fas fa-chevron-down"></i></div>
                 <div class="accordion-content">
-                    <div class="layer-item">
-                        <span>Itinerário</span>
-                        <label class="switch">
-                            <input type="checkbox" id="itinerarioLayerToggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
+                    <div class="layer-item"><span>Itinerário</span><label class="switch"><input type="checkbox" id="itinerarioLayerToggle"><span class="slider"></span></label></div>
                     <div class="layer-item"><span>Ciclovias</span><label class="switch"><input type="checkbox" id="cicloviasLayerToggle"><span class="slider"></span></label></div>
                     <div class="layer-item"><span>Pontos de Táxi</span><label class="switch"><input type="checkbox" id="taxiLayerToggle"><span class="slider"></span></label></div>
                 </div>
             </div>
 
             <div class="accordion-item">
-                <div class="accordion-title">
-                    RECURSOS NATURAIS
-                    <i class="fas fa-chevron-down"></i>
-                </div>
+                <div class="accordion-title">RECURSOS NATURAIS <i class="fas fa-chevron-down"></i></div>
                 <div class="accordion-content">
-                    <div class="layer-item">
-                        <span>Bacias hidrográficas</span>
-                        <label class="switch">
-                            <input type="checkbox" id="baciasLayerToggle"> 
-                            <span class="slider"></span>
-                        </label>
-                    </div>
+                    <div class="layer-item"><span>Bacias hidrográficas</span><label class="switch"><input type="checkbox" id="baciasLayerToggle"><span class="slider"></span></label></div>
                     <div class="layer-item"><span>Vegetação</span><label class="switch"><input type="checkbox" id="vegetacaoLayerToggle"><span class="slider"></span></label></div>
                     <div class="layer-item"><span>Corpos d'Água</span><label class="switch"><input type="checkbox" id="aguaLayerToggle"><span class="slider"></span></label></div>
                     <div class="layer-item"><span>Áreas de Preservação</span><label class="switch"><input type="checkbox" id="appLayerToggle"><span class="slider"></span></label></div>
@@ -457,52 +250,32 @@
             </div>
             
             <div class="accordion-item">
-                <div class="accordion-title">
-                    PLANEJAMENTO URBANO
-                    <i class="fas fa-chevron-down"></i>
-                </div>
+                <div class="accordion-title">PLANEJAMENTO URBANO <i class="fas fa-chevron-down"></i></div>
                 <div class="accordion-content">
                     <div class="layer-item"><span>Zoneamento</span><label class="switch"><input type="checkbox" id="zoneamentoLayerToggle"><span class="slider"></span></label></div>
-                    <div class="layer-item">
-                        <span>Áreas de Risco</span>
-                        <label class="switch">
-                            <input type="checkbox" id="areasDeRiscoLayerToggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
+                    <div class="layer-item"><span>Áreas de Risco</span><label class="switch"><input type="checkbox" id="areasDeRiscoLayerToggle"><span class="slider"></span></label></div>
                     <div class="layer-item"><span>População Censo IBGE 2022</span><label class="switch"><input type="checkbox" id="populacaoLayerToggle"><span class="slider"></span></label></div>
                 </div>
             </div>
 
             <div class="accordion-item">
-                <div class="accordion-title">
-                    DOWNLOAD METADADOS
-                    <i class="fas fa-chevron-down"></i>
-                </div>
+                <div class="accordion-title">DOWNLOAD METADADOS <i class="fas fa-chevron-down"></i></div>
                 <div class="accordion-content">
                     <div class="layer-item" style="justify-content: start;">
                         <i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--cor-principal);"></i>
                         <a href="data/metadados_limites.pdf" download style="text-decoration: none; color: var(--cor-texto-escuro);">Metadados - Limites Municipais</a>
                     </div>
-                    <div class="layer-item" style="justify-content: start;">
-                        <i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--cor-principal);"></i>
-                        <a href="data/metadados_bairros.pdf" download style="text-decoration: none; color: var(--cor-texto-escuro);">Metadados - Bairros</a>
-                    </div>
-                    <div class="layer-item" style="justify-content: start;">
-                        <i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--cor-principal);"></i>
-                        <a href="data/metadados_bacias.pdf" download style="text-decoration: none; color: var(--cor-texto-escuro);">Metadados - Bacias Hidrográficas</a>
-                    </div>
-                    <p style="font-size: 0.75em; color: #666; margin: 10px 0;">* Os arquivos de metadados devem ser inseridos na pasta `data/`.</p>
                 </div>
             </div>
-            
+        </div>
+        <div class="sidebar-footer">
+            DESENVOLVIDO POR ARTHUR AQUINO TOMAZ, CONCLUINTE DO CURSO DE TECNOLOGIA EM GEOPROCESSAMENTO DO INSTITUTO FEDERAL DA PARAIBA - CAMPUS JOÃO PESSOA
         </div>
     </div>
 
     <div id="mapid"></div>
 
     <script>
-        // Lógica do Acordeão
         document.querySelectorAll('.accordion-title').forEach(button => {
             button.addEventListener('click', () => {
                 const accordionItem = button.parentElement;
@@ -510,1111 +283,515 @@
             });
         });
 
+        const sidebar = document.getElementById('sidebarMenu');
+        const openBtn = document.getElementById('sidebarToggleBtn');
+        const closeBtn = document.getElementById('closeSidebarBtn');
+
+        openBtn.addEventListener('click', () => { sidebar.classList.add('active'); });
+        closeBtn.addEventListener('click', () => { sidebar.classList.remove('active'); });
+
         // =======================================================
-        // DECLARAÇÃO DE VARIÁVEIS GLOBAIS
+        // 1. VARIÁVEIS GLOBAIS
         // =======================================================
         var layerControl;
-        var itinerarioLegend = null; 
-        var baciasLegend = null; 
-        var bairrosLayer = null; 
-        var limitesLayer = null; 
-        var setoresLayer = null; 
-        var itinerarioLayer = null; 
-        var pracasLayer = null; 
-        var baciasLayer = null; 
-        var pracasLegend = null; 
-        var crechesLayer = null; 
-        var bufferCrechesLayer = null; 
-        var bufferLegend = null;      
-        let ruidoAeroportoLayer = null;
-        let zonaUrbanaLayer = null;
-        let ruidoAeroportoLegend = null;
-        let areasDeRiscoLayer = null; 
-        let areasRiscoLegend = null;
-        
-        // VARIÁVEIS PARA SAÚDE
-        var postosSaudeLayer = null; 
-        var saudeLegend = null; 
-        
-        // VARIÁVEIS DUMMY (A SEREM IMPLEMENTADAS)
-        var escolasLayer = null;
-        var culturaisLayer = null;
-        var cicloviasLayer = null;
-        var taxiLayer = null;
-        var vegetacaoLayer = null;
-        var aguaLayer = null;
-        var appLayer = null;
-        var zoneamentoLayer = null;
-        var populacaoLayer = null;
+        var mymap;
 
-        // ** CONFIGURAÇÃO DE ZOOM PARA RÓTULOS **
+        var limitesLayer = null, bairrosLayer = null, setoresLayer = null, ruidoAeroportoLayer = null;
+        var zonaUrbanaLayer = null, areasDeRiscoLayer = null, pracasLayer = null, crechesLayer = null; 
+        var bufferCrechesLayer = null, escolasLayer = null, postosSaudeLayer = null;
+        var itinerarioLayer = null, baciasLayer = null;
+        
+        var mercadosLayer = null; 
+        var mercadosLegend = null;
+
+        // --- VARIÁVEIS ATERRO ---
+        var aterroLayer = null;
+        var aterroLegend = null;
+        // ------------------------
+
+        var geralLegend = null, itinerarioLegend = null, baciasLegend = null, pracasLegend = null;
+        var bufferLegend = null, saudeLegend = null, escolasLegend = null;
+
+        var culturaisLayer = null, cicloviasLayer = null, taxiLayer = null;
+        var vegetacaoLayer = null, aguaLayer = null, appLayer = null;
+        var zoneamentoLayer = null, populacaoLayer = null;
+
         const MAX_ZOOM_FOR_LABELS = 13; 
+
+        // =======================================================
+        // 2. INICIALIZAÇÃO DO MAPA
+        // =======================================================
+        var santaRitaLat = -7.1189; var santaRitaLong = -34.9608; var zoomLevel = 11; 
+        mymap = L.map('mapid').setView([santaRitaLat, santaRitaLong], zoomLevel);
+        mymap.zoomControl.setPosition('topright');
+
+        var whiteLayer = L.tileLayer('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEAAQMAAABmvDolAAAAA1BMVEX///+nxBvIAAAAH0lEQVQYGe3BAQ0AAADCIPunfg43YAAAAAAAAAAA5wIhAAAB9aK9BAAAAABJRU5ErkJggg==', { minZoom: 0, maxZoom: 20, attribution: 'Fundo Branco' }).addTo(mymap); 
+        var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }); 
+        var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri', maxZoom: 19 });
         
-        // 1. Inicializa o mapa (Centralizado em Santa Rita)
-        var santaRitaLat = -7.1189; 
-        var santaRitaLong = -34.9608;
-        var zoomLevel = 11; 
-        var mymap = L.map('mapid').setView([santaRitaLat, santaRitaLong], zoomLevel);
+        var baseMaps = { "Fundo Branco": whiteLayer, "OpenStreetMap": osmLayer, "Satélite": satelliteLayer };
+        layerControl = L.control.layers(baseMaps, {}).addTo(mymap);
+
+        L.control.polylineMeasure({ position: 'topright', unit: 'kilometres', showBearings: false, clearMeasurementsOnStop: false, showClearControl: true, showUnitControl: true, measureControlTitleOn: 'Ativar Medição', measureControlTitleOff: 'Desativar Medição', tooltipTextFinish: 'Clique para finalizar', tooltipTextDelete: 'Pressione SHIFT e clique para deletar', tooltipTextMove: 'Clique e arraste para mover', tooltipTextResume: '<br>Pressione CTRL e clique para continuar', tooltipTextAdd: 'Clique para começar', }).addTo(mymap);
+
+        L.control.scale({ position: 'bottomright', imperial: false, maxWidth: 200 }).addTo(mymap);
 
         // =======================================================
-        // BARRA DE PESQUISA CUSTOMIZADA PARA CAMADAS (Top-Right)
+        // 3. BARRA DE PESQUISA
         // =======================================================
-
         const SearchControl = L.Control.extend({
             onAdd: function(map) {
                 const container = L.DomUtil.create('div', 'leaflet-bar custom-search-control');
-                container.style.backgroundColor = 'white';
-                container.style.padding = '5px';
-                container.style.boxShadow = 'var(--sombra-leve)';
-                container.style.borderRadius = '4px';
-
-                container.innerHTML = `
-                    <input type="text" id="layerSearchInput" placeholder="Buscar camada (ex: bairros)" style="width: 180px; padding: 5px; border: 1px solid #ccc; border-radius: 3px; font-family: 'Poppins';">
-                    <button id="layerSearchButton" style="padding: 5px 10px; border: none; background-color: var(--cor-principal); color: white; border-radius: 3px; margin-left: 5px; cursor: pointer;"><i class="fas fa-search"></i></button>
-                `;
-
-                // Impedir cliques e rolagem de propagar para o mapa
+                container.innerHTML = `<input type="text" id="layerSearchInput" placeholder="Buscar camada..." style="width: 150px; padding: 5px; border:none; outline:none;"><button id="layerSearchButton" style="padding: 5px; background:white; border:none; cursor:pointer;"><i class="fas fa-search" style="color:var(--cor-principal)"></i></button>`;
                 L.DomEvent.disableClickPropagation(container);
-                L.DomEvent.disableScrollPropagation(container);
-
-                const searchButton = container.querySelector('#layerSearchButton');
-                const searchInput = container.querySelector('#layerSearchInput');
-
-                const performSearch = () => {
-                    const searchTerm = searchInput.value.toLowerCase().trim();
-                    searchLayerByKeyword(searchTerm);
-                };
-
-                searchButton.addEventListener('click', performSearch);
-                searchInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        performSearch();
-                    }
-                });
-
+                setTimeout(() => { document.getElementById('layerSearchButton').addEventListener('click', () => searchLayerByKeyword(document.getElementById('layerSearchInput').value)); }, 100);
                 return container;
-            },
-            onRemove: function(map) {
-                // Nada a fazer aqui por enquanto
             }
         });
-
-        // Adiciona o novo controle de pesquisa ao mapa na posição superior direita
         new SearchControl({ position: 'topright' }).addTo(mymap);
 
-        // Função de busca interna por palavra-chave
         function searchLayerByKeyword(term) {
-            
-            const normalizedTerm = term.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove acentos
-            let foundMatch = false;
-            
-            // Mapeamento de Palavras-Chave para IDs de Toggle
-            const keywordMap = {
-                // ARQUIVOS GERAIS
-                "limites": 'limitesLayerToggle',
-                "bairros": 'bairrosLayerToggle',
-                "setores": 'setoresLayerToggle',
-                "setor": 'setoresLayerToggle',
-                "censitario": 'setoresLayerToggle',
-                "ruido": 'ruidoAeroportoLayerToggle',
-                "aeroporto": 'ruidoAeroportoLayerToggle',
-                "urbana": 'zonaUrbanaLayerToggle',
-                "zona": 'zonaUrbanaLayerToggle',
-                
-                // EQUIPAMENTOS MUNICIPAIS
-                "escola": 'escolasLayerToggle',
-                "creche": 'crechesLayerToggle',
-                "cultural": 'culturaisLayerToggle',
-                "cultura": 'culturaisLayerToggle',
-                "praca": 'pracasLayerToggle',
-                "parque": 'pracasLayerToggle',
-                "saude": 'postosSaudeLayerToggle',
-                "posto": 'postosSaudeLayerToggle',
-                "ubs": 'postosSaudeLayerToggle',
-                
-                // MOBILIDADE URBANA
-                "itinerario": 'itinerarioLayerToggle',
-                "onibus": 'itinerarioLayerToggle',
-                "ciclovia": 'cicloviasLayerToggle',
-                "taxi": 'taxiLayerToggle',
-                
-                // RECURSOS NATURAIS
-                "bacia": 'baciasLayerToggle',
-                "rio": 'baciasLayerToggle',
-                "vegetacao": 'vegetacaoLayerToggle',
-                "agua": 'aguaLayerToggle',
-                "app": 'appLayerToggle',
-                "preservacao": 'appLayerToggle',
-                
-                // PLANEJAMENTO URBANO
-                "zoneamento": 'zoneamentoLayerToggle',
-                "risco": 'areasDeRiscoLayerToggle',
-                "populacao": 'populacaoLayerToggle',
-                "censo": 'populacaoLayerToggle',
+            const normalizedTerm = term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const mapKeys = {
+                "escola": "escolasLayerToggle", "bairro": "bairrosLayerToggle", "limite": "limitesLayerToggle",
+                "saude": "postosSaudeLayerToggle", "risco": "areasDeRiscoLayerToggle",
+                "mercado": "mercadosLayerToggle", "feira": "mercadosLayerToggle", "abatedouro": "mercadosLayerToggle",
+                "aterro": "aterroLayerToggle", "lixo": "aterroLayerToggle"
             };
-
-            for (const [keyword, toggleId] of Object.entries(keywordMap)) {
-                if (normalizedTerm.includes(keyword)) {
-                    const toggleElement = document.getElementById(toggleId);
-                    
-                    if (toggleElement && !toggleElement.checked) {
-                        
-                        // Simula o clique no switch/checkbox para ativar a camada
-                        toggleElement.checked = true;
-                        // Dispara o evento 'change' para que a função de carregamento seja executada
-                        toggleElement.dispatchEvent(new Event('change'));
-
-                        // Encontra o item do acordeão e o abre se necessário
-                        const accordionItem = toggleElement.closest('.accordion-item');
-                        if (accordionItem) {
-                            // Fecha todos os outros itens do acordeão
-                            document.querySelectorAll('.accordion-item.active').forEach(item => {
-                                item.classList.remove('active');
-                            });
-                            // Abre o item correto
-                            accordionItem.classList.add('active');
-                        }
-                        
-                        console.log(`✅ Camada ativada: ${keyword} -> ${toggleId}`);
-                        foundMatch = true;
-                        break;
-                    } else if (toggleElement && toggleElement.checked) {
-                        console.log(`ℹ️ Camada ${keyword} já está ativa.`);
-                        foundMatch = true;
-                        break;
-                    }
+            for (let k in mapKeys) {
+                if (normalizedTerm.includes(k)) {
+                    if(!sidebar.classList.contains('active')) { sidebar.classList.add('active'); }
+                    document.getElementById(mapKeys[k]).click();
+                    return;
                 }
             }
-
-            if (!foundMatch) {
-                alert(`Nenhuma camada encontrada para o termo "${term}". Tente pesquisar por: bairros, praça, risco, ou escola.`);
-            }
-        }
-        
-        // =========================================================================
-        // 2. DEFINIÇÃO DOS MAPAS BASE (BASEMAPS)
-        // =========================================================================
-
-        var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(mymap); 
-
-        var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-            maxZoom: 19
-        });
-        
-        var baseMaps = {
-            "OpenStreetMap (Padrão)": osmLayer,
-            "Satélite (Imagens Esri)": satelliteLayer
-        };
-
-        layerControl = L.control.layers(baseMaps, {}).addTo(mymap);
-        
-        // --- FUNÇÕES DE ESTILO (Estilos e Ícones) ---
-        
-        function bairrosStyle(feature) {
-            return { fillColor: '#ff9900', weight: 2, opacity: 1, color: '#666', dashArray: '3', fillOpacity: 0.3 };
-        }
-
-        function limitesStyle(feature) {
-            return { fillColor: 'transparent', weight: 3, opacity: 1, color: 'red', dashArray: '10, 5', fillOpacity: 0 };
-        }
-
-        function setoresStyle(feature) {
-            return { fillColor: '#00ccff', weight: 1, opacity: 0.8, color: '#333333', fillOpacity: 0.2 };
-        }
-        
-        function itinerarioStyle(feature) {
-            const carameloTostado = '#A0522D';
-            const verdePadrao = '#00FF00'; 
-            
-            let lineColor = verdePadrao; 
-            
-            if (feature.properties && feature.properties.Linha) {
-                if (feature.properties.Linha === 5607) {
-                    lineColor = verdePadrao; 
-                } else if (feature.properties.Linha === 'Heitel') { 
-                    lineColor = carameloTostado; 
-                }
-            }
-
-            return { color: lineColor, weight: 4, opacity: 1 };
-        }
-
-        function pracasStyle(feature) {
-            let color, fillColor;
-            const rawTipo = feature.properties.tipo || feature.properties.TIPO;
-            const tipo = rawTipo ? String(rawTipo).trim().toLowerCase() : 'praca'; 
-            
-            if (tipo.includes('parque')) { fillColor = '#4169E1'; color = '#191970'; 
-            } else if (tipo.includes('calçadão') || tipo.includes('calcadao')) { fillColor = '#FFD700'; color = '#DAA520'; 
-            } else { fillColor = '#90EE90'; color = '#3CB371'; }
-
-            return { fillColor: fillColor, weight: 2, opacity: 1, color: color, fillOpacity: 0.7 };
-        }
-
-        function baciasStyle(feature) {
-            let fillColor = '#cccccc'; 
-            const miriri = '#FFFFBA'; const paraiba = '#FFB3BA'; const gramame = '#BAE1FF'; 
-            
-            if (feature.properties && feature.properties.nome_bacia) {
-                const nomeBaciaNormalizada = feature.properties.nome_bacia.trim().toLowerCase();
-                
-                if (nomeBaciaNormalizada.includes('miriri')) { fillColor = miriri;
-                } else if (nomeBaciaNormalizada.includes('paraíba') || nomeBaciaNormalizada.includes('paraiba')) { fillColor = paraiba; 
-                } else if (nomeBaciaNormalizada.includes('gramame')) { fillColor = gramame; } 
-                else { fillColor = '#E0E0E0'; }
-            }
-
-            return { fillColor: fillColor, weight: 1, opacity: 0.8, color: '#666', fillOpacity: 0.5 };
-        }
-        
-        function styleRuidoAeroporto(feature) {
-            return { fillColor: '#8c2d04', weight: 2, opacity: 1, color: '#800080', dashArray: '5, 5', fillOpacity: 0.1 };
-        }
-
-        function styleZonaUrbana(feature) {
-            return { fillColor: '#e0f3db', weight: 2, opacity: 1, color: '#6c886c', fillOpacity: 0.3 };
-        }
-        
-        function styleAreasDeRisco(feature) {
-            return { fillColor: '#FF0000', weight: 3, color: '#8B0000', fillOpacity: 0.5 };
-        }
-
-        function crechesIcon(feature) {
-            const iconHtml = `<i class="fas fa-graduation-cap" style="color: #DC143C; font-size: 24px;"></i>`;
-            return L.divIcon({ className: 'custom-creche-icon', html: iconHtml, iconSize: [24, 24], iconAnchor: [12, 24], popupAnchor: [0, -20] });
-        }
-        
-        // --- FUNÇÕES DE ÍCONE PARA SAÚDE ---
-        function postosSaudeIcon(feature) {
-            const iconHtml = `<i class="fas fa-clinic-medical" style="color: #008000; font-size: 24px;"></i>`; 
-            return L.divIcon({ className: 'custom-posto-icon', html: iconHtml, iconSize: [24, 24], iconAnchor: [12, 24], popupAnchor: [0, -20] });
-        }
-        
-        function bufferCrechesStyle(feature) {
-            return { fillColor: '#F5F5DC', color: '#A0522D', weight: 1, opacity: 0.7, fillOpacity: 0.4 };
-        }
-        
-        // --- FUNÇÃO POPUP GENÉRICA ---
-        function createStyledPopupContent(title, properties) {
-            let popupHeader = `<div class="popup-header">${title.toUpperCase()}</div>`;
-            let popupContent = `<div class="popup-data">`;
-            
-            const excludedKeys = ['ID', 'OBJECTID', 'GEOID', 'CD_SETOR', 'CD_SIT', 'CD_TIPO', 'CD_REGIAO', 'CD_UF', 'CD_MUN', 'CD_DIST', 'CD_SUBDIST', 'CD_BAIRRO', 'CD_NU', 'CD_FCU', 'CD_AGLOM', 'CD_RGINT', 'CD_RGI', 'COD_SETOR', 'SHAPEAREA', 'SHAPELEN', 'tipo']; // Adicionei 'tipo'
-            let contentFound = false;
-
-            for (const key in properties) {
-                if (properties.hasOwnProperty(key)) {
-                    const normalizedKey = key.toUpperCase().replace(/[_\W]+/g, '');
-                    
-                    if (excludedKeys.some(ex => normalizedKey.includes(ex)) || excludedKeys.includes(key)) {
-                        continue; 
-                    }
-                    
-                    let value = properties[key];
-                    if (value === null || value === undefined || value === "") { continue; }
-                    
-                    if (typeof value === 'number') {
-                        if (value % 1 !== 0 || value < 1000) {
-                             value = value.toLocaleString('pt-BR', { maximumFractionDigits: 3 });
-                             if (normalizedKey.includes('AREA') || normalizedKey.includes('KM2')) { value += ' km²'; } 
-                             else if (normalizedKey.includes('M2')) { value += ' m²'; }
-                        } else {
-                            value = value.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
-                        }
-                    }
-                    
-                    const displayKey = key.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-                    popupContent += `<p><strong>${displayKey}:</strong> ${value}</p>`;
-                    contentFound = true;
-                }
-            }
-            
-            if (!contentFound) {
-                 popupContent += `<p>Informações detalhadas não disponíveis.</p>`;
-            }
-            
-            popupContent += `</div>`;
-            return popupHeader + popupContent;
+            alert("Camada não encontrada. Tente 'escola', 'bairro', 'saude', 'mercado'.");
         }
 
         // =======================================================
-        // FUNÇÕES ON EACH FEATURE (Para Popups e Interação)
+        // 4. ESTILOS E ÍCONES 
         // =======================================================
-
-        function onEachBairroFeature(feature, layer) {
-            if (feature.properties) {
-                const title = feature.properties.Nome || "Bairro";
-                layer.bindPopup(createStyledPopupContent(title, feature.properties));
-                if (feature.properties.Nome) {
-                     layer.bindTooltip(feature.properties.Nome, { permanent: true, direction: 'center', className: 'bairro-label' });
-                }
+        function bairrosStyle() { return { fillColor: '#ff9900', weight: 2, opacity: 1, color: '#666', dashArray: '3', fillOpacity: 0.3 }; }
+        function limitesStyle() { return { fillColor: 'transparent', weight: 3, opacity: 1, color: 'red', dashArray: '10, 5', fillOpacity: 0 }; }
+        function setoresStyle() { return { fillColor: '#00ccff', weight: 1, opacity: 0.8, color: '#333333', fillOpacity: 0.2 }; }
+        function styleRuido() { return { fillColor: '#8c2d04', weight: 2, color: '#800080', dashArray: '5, 5', fillOpacity: 0.1 }; }
+        function styleZonaUrbana() { return { fillColor: '#e0f3db', weight: 2, color: '#6c886c', fillOpacity: 0.3 }; }
+        function styleRisco() { return { fillColor: '#FF0000', weight: 3, color: '#8B0000', fillOpacity: 0.5 }; }
+        
+        function baciasStyle(f) { 
+            let c = '#cccccc';
+            if(f.properties.nome_bacia) {
+                let n = f.properties.nome_bacia.toLowerCase();
+                if(n.includes('miriri')) c = '#FFFFBA'; else if(n.includes('paraiba')) c = '#FFB3BA'; else if(n.includes('gramame')) c = '#BAE1FF';
             }
-            layer.on({
-                mouseover: function (e) { e.target.setStyle({ weight: 4, color: '#0056b3', dashArray: '', fillOpacity: 0.5 }); if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) { e.target.bringToFront(); } },
-                mouseout: function (e) { bairrosLayer.resetStyle(e.target); },
-                click: function (e) { mymap.fitBounds(e.target.getBounds()); }
-            });
+            return { fillColor: c, weight: 1, color: '#666', fillOpacity: 0.5 }; 
         }
         
-        function onEachSetorFeature(feature, layer) {
-            if (feature.properties) {
-                layer.bindPopup(createStyledPopupContent("Setor Censitário", feature.properties));
-            }
-            layer.on({
-                mouseover: function (e) { e.target.setStyle({ weight: 3, color: '#ff0000', fillOpacity: 0.5 }); },
-                mouseout: function (e) { setoresLayer.resetStyle(e.target); },
-                click: function (e) { mymap.fitBounds(e.target.getBounds()); }
+        function pracasStyle(f) {
+            let fc = '#90EE90', c = '#3CB371';
+            let t = (f.properties.tipo || '').toLowerCase();
+            if(t.includes('parque')) { fc = '#4169E1'; c='#191970'; } else if(t.includes('calçadão')) { fc = '#FFD700'; c='#DAA520'; }
+            return { fillColor: fc, weight: 2, color: c, fillOpacity: 0.7 };
+        }
+        
+        function itinerarioStyle(f) {
+            let c = '#00FF00'; if(f.properties.Linha === 'Heitel') c = '#A0522D';
+            return { color: c, weight: 4 };
+        }
+        
+        function bufferCrechesStyle() { return { fillColor: '#F5F5DC', color: '#A0522D', weight: 1, opacity: 0.7, fillOpacity: 0.4 }; }
+
+        function mercadosStyle(feature) {
+            var valorTipo = (feature.properties.Tipo || "").toString().toUpperCase();
+            var fillColor = '#cccccc'; var borderColor = '#666666';
+            if (valorTipo.includes('MERCADO')) { fillColor = '#FF0000'; borderColor = '#8B0000'; } 
+            else if (valorTipo.includes('FEIRA')) { fillColor = '#008000'; borderColor = '#004d00'; } 
+            else if (valorTipo.includes('ABAT')) { fillColor = '#800080'; borderColor = '#4B0082'; }
+            return { fillColor: fillColor, weight: 2, opacity: 1, color: borderColor, dashArray: '', fillOpacity: 0.7 };
+        }
+
+        // --- NOVO ESTILO: ATERRO SANITÁRIO (Marrom) ---
+        function aterroStyle(feature) {
+            return {
+                fillColor: '#795548', // Marrom
+                weight: 2, opacity: 1, color: '#3E2723', dashArray: '5, 5', fillOpacity: 0.7
+            };
+        }
+        
+        // Ícone caso o aterro seja ponto
+        function aterroIcon() {
+            return L.divIcon({
+                className: 'custom-aterro-icon',
+                html: '<i class="fas fa-trash-alt" style="color: #795548; font-size: 18px; text-shadow: 1px 1px 0 #fff;"></i>',
+                iconSize: [18, 18], iconAnchor: [9, 9], popupAnchor: [0, -9]
             });
         }
 
-        function onEachRuidoAeroportoFeature(feature, layer) {
-            if (feature.properties) { layer.bindPopup(createStyledPopupContent("ÁREA DE RESTRIÇÃO DE RUÍDO", feature.properties)); }
+        // --- ÍCONES ---
+        function crechesIcon() { 
+            const size = 16;
+            const cssCircle = `<div style="width: ${size}px; height: ${size}px; background-color: #DC143C; border: 2px solid white; border-radius: 50%; box-sizing: border-box; box-shadow: 0 0 4px rgba(0,0,0,0.3);"></div>`;
+            return L.divIcon({ className: 'custom-creche-icon', html: cssCircle, iconSize: [size, size], iconAnchor: [size/2, size/2], popupAnchor: [0, -size/2] }); 
         }
         
-        function onEachZonaUrbanaFeature(feature, layer) {
-            if (feature.properties) { layer.bindPopup(createStyledPopupContent("Zona Urbana", feature.properties)); }
-        }
-        
-        function onEachAreasDeRiscoFeature(feature, layer) {
-            if (feature.properties) {
-                const title = feature.properties.NOME_RISCO || "Área de Risco"; 
-                layer.bindPopup(createStyledPopupContent(title, feature.properties));
-                layer.on({
-                    mouseover: function (e) { e.target.setStyle({ weight: 5, color: '#000', fillOpacity: 0.7 }); if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) { e.target.bringToFront(); } },
-                    mouseout: function (e) { areasDeRiscoLayer.resetStyle(e.target); },
-                    click: function (e) { mymap.fitBounds(e.target.getBounds()); }
-                });
-            }
-        }
-        
-        function onEachPracaFeature(feature, layer) {
-            if (feature.properties) {
-                const rawTipo = feature.properties.tipo || feature.properties.TIPO || 'Equipamento Urbano';
-                const displayTitle = String(rawTipo).toUpperCase();
-                layer.bindPopup(createStyledPopupContent(displayTitle, feature.properties));
-            }
-            layer.on({
-                mouseover: function (e) { e.target.setStyle({ weight: 4, color: '#333333', fillOpacity: 0.9 }); if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) { e.target.bringToFront(); } },
-                mouseout: function (e) { pracasLayer.resetStyle(e.target); },
-                click: function (e) { mymap.fitBounds(e.target.getBounds()); }
-            });
-        }
-        
-        function onEachBaciaFeature(feature, layer) {
-            if (feature.properties) {
-                layer.bindPopup(createStyledPopupContent("Bacia Hidrográfica", feature.properties));
-            }
-            layer.on({
-                mouseover: function (e) { e.target.setStyle({ weight: 3, color: '#000000', fillOpacity: 0.7 }); },
-                mouseout: function (e) { baciasLayer.resetStyle(e.target); },
-                click: function (e) { mymap.fitBounds(e.target.getBounds()); }
-            });
-        }
-
-        function onEachCrecheFeature(feature, layer) {
-            if (feature.properties) {
-                layer.bindPopup(createStyledPopupContent("CRECHE MUNICIPAL", feature.properties));
-            }
-        }
-
-        function onEachItinerarioFeature(feature, layer) {
-            if (feature.properties) {
-                layer.bindPopup(createStyledPopupContent("Itinerário de Ônibus", feature.properties));
-            }
-        }
-        
-        // NOVO: POSTOS DE SAÚDE (UBS)
-        function onEachPostoSaudeFeature(feature, layer) {
-            if (feature.properties) {
-                const title = feature.properties.Nome || "Posto de Saúde";
-                layer.bindPopup(createStyledPopupContent(title, feature.properties));
-            }
-        }
-        
-        function onEachOutrosSaudeFeature(feature, layer) {
-            if (feature.properties) {
-                const title = feature.properties.Nome || "Equipamento de Saúde";
-                layer.bindPopup(createStyledPopupContent(title, feature.properties));
-            }
-        }
-
-        
-        // =======================================================
-        // FUNÇÕES DUMMY/PLACEHOLDER (Para evitar erros se ativadas)
-        // =======================================================
-        function loadEscolasGeoJSON() { /* ... */ }
-        function loadCulturaisGeoJSON() { /* ... */ }
-        function loadCicloviasGeoJSON() { /* ... */ }
-        function loadTaxiGeoJSON() { /* ... */ }
-        function loadVegetacaoGeoJSON() { /* ... */ }
-        function loadAguaGeoJSON() { /* ... */ }
-        function loadAppGeoJSON() { /* ... */ }
-        function loadZoneamentoGeoJSON() { /* ... */ }
-        function loadPopulacaoGeoJSON() { /* ... */ }
-        // ... (Seu código pode ter mais ou menos funções dummy)
-
-        // =======================================================
-        // FUNÇÕES DE UTILIDADE E CARREGAMENTO DE CAMADAS
-        // =======================================================
-
-        function toggleBairroLabels() {
-            if (!bairrosLayer || !mymap.hasLayer(bairrosLayer)) return; 
-
-            const currentZoom = mymap.getZoom();
-            const shouldShow = currentZoom <= MAX_ZOOM_FOR_LABELS;
-
-            bairrosLayer.eachLayer(function (layer) {
-                const tooltip = layer.getTooltip();
-                if (tooltip) {
-                    if (shouldShow) { layer.openTooltip(); } else { layer.closeTooltip(); }
+        function postosSaudeIcon(feature) { 
+            let color = '#008000'; let iconClass = 'fa-clinic-medical'; let zIndex = 100; let size = 16;
+            if (feature && feature.properties) {
+                let tipoOriginal = feature.properties.TIPO || feature.properties.tipo || "";
+                if (tipoOriginal) {
+                    let tipo = tipoOriginal.toString().toUpperCase().trim();
+                    if (tipo.includes('HOSPITAL')) { color = '#007BFF'; iconClass = 'fa-hospital'; zIndex = 200; size = 18; } 
+                    else if (tipo.includes('SECRETARIA')) { color = '#FF8C00'; iconClass = 'fa-building'; zIndex = 150; } 
+                    else if (tipo.includes('CENTRO')) { color = '#9C27B0'; iconClass = 'fa-star-of-life'; zIndex = 150; }
+                    else if (tipo.includes('SERVIÇO') || tipo.includes('SERVICO')) { color = '#DC143C'; iconClass = 'fa-briefcase-medical'; zIndex = 150; }
                 }
-            });
-        }
-        
-        mymap.on('zoomend', toggleBairroLabels);
-
-        // --- CARREGAMENTO DE CAMADAS PRINCIPAIS (com toggle handlers) ---
-        
-        // LIMITES
-        function loadLimitesGeoJSON() {
-            const limitesFilePath = 'data/Limite_municipal.geojson'; 
-
-            if (limitesLayer !== null) { limitesLayer.addTo(mymap); return; }
-            
-            fetch(limitesFilePath)
-                .then(response => { if (!response.ok) { throw new Error('Erro HTTP: ' + response.status); } return response.json(); })
-                .then(data => {
-                    limitesLayer = L.geoJson(data, { style: limitesStyle });
-                    if (layerControl) { layerControl.addOverlay(limitesLayer, "Limites Municipais"); }
-                    if (document.getElementById('limitesLayerToggle').checked) { limitesLayer.addTo(mymap); }
-                })
-                .catch(error => { console.error('🔴 ERRO LIMITES:', error); document.getElementById('limitesLayerToggle').checked = false; });
-        }
-        
-        document.getElementById('limitesLayerToggle').addEventListener('change', function(e) {
-            if (e.target.checked) { loadLimitesGeoJSON(); } else { if (limitesLayer !== null) { mymap.removeLayer(limitesLayer); } }
-        });
-        
-        // BAIRROS
-        function loadBairrosGeoJSON(shouldZoom) {
-            const bairrosFilePath = 'data/Bairros.geojson'; 
-
-            if (bairrosLayer !== null) {
-                if (document.getElementById('bairrosLayerToggle').checked) {
-                    bairrosLayer.addTo(mymap);
-                    toggleBairroLabels(); 
-                    if (shouldZoom && bairrosLayer.getBounds().isValid()) { mymap.fitBounds(bairrosLayer.getBounds()); }
-                }
-                return;
             }
-            
-            fetch(bairrosFilePath)
-                .then(response => { if (!response.ok) { throw new Error('Erro HTTP: ' + response.status); } return response.json(); })
-                .then(data => {
-                    bairrosLayer = L.geoJson(data, { style: bairrosStyle, onEachFeature: onEachBairroFeature });
-                    if (layerControl) { layerControl.addOverlay(bairrosLayer, "Bairros"); }
-                    
-                    if (document.getElementById('bairrosLayerToggle').checked) { 
-                        bairrosLayer.addTo(mymap); 
-                        toggleBairroLabels();
-                    }
-                    if (shouldZoom && bairrosLayer.getBounds().isValid()) { mymap.fitBounds(bairrosLayer.getBounds()); }
-                })
-                .catch(error => { console.error('🔴 ERRO BAIRROS:', error); document.getElementById('bairrosLayerToggle').checked = false; });
+            return L.divIcon({ className: 'custom-posto-icon', html: `<i class="fas ${iconClass}" style="color: ${color}; font-size: ${size}px; text-shadow: 1px 1px 0 #fff; z-index:${zIndex};"></i>`, iconSize: [size, size], iconAnchor: [size/2, size], popupAnchor: [0, -size] }); 
         }
-
-        document.getElementById('bairrosLayerToggle').addEventListener('change', function(e) {
-            if (e.target.checked) { loadBairrosGeoJSON(true); } else { if (bairrosLayer !== null) { mymap.removeLayer(bairrosLayer); } }
-        });
-
-        // SETORES
-        function loadSetoresGeoJSON() {
-            const setoresFilePath = 'data/setores.geojson'; 
-
-            if (setoresLayer !== null) { 
-                if (document.getElementById('setoresLayerToggle').checked) { setoresLayer.addTo(mymap); }
-                return; 
+        
+        function escolasIcon(feature) { 
+            let color = '#333333'; const iconClass = 'fa-school'; 
+            if (feature && feature.properties && feature.properties['Dependênc']) {
+                const dep = feature.properties['Dependênc'].toString().toUpperCase();
+                if (dep.includes('MUNICIPAL')) color = '#FFB347'; else if (dep.includes('ESTADUAL')) color = '#28A745'; else if (dep.includes('PRIVADA')) color = '#6F42C1'; else if (dep.includes('FEDERAL')) color = '#007BFF'; 
             }
-            
-            fetch(setoresFilePath)
-                .then(response => { if (!response.ok) { throw new Error('Erro HTTP: ' + response.status); } return response.json(); })
-                .then(data => {
-                    setoresLayer = L.geoJson(data, { style: setoresStyle, onEachFeature: onEachSetorFeature });
-                    if (layerControl) { layerControl.addOverlay(setoresLayer, "Setores Censitários"); }
-                    if (document.getElementById('setoresLayerToggle').checked) { setoresLayer.addTo(mymap); }
-                })
-                .catch(error => { console.error('🔴 ERRO SETORES:', error); document.getElementById('setoresLayerToggle').checked = false; });
+            return L.divIcon({ className: 'custom-escola-icon', html: `<i class="fas ${iconClass}" style="color: ${color}; font-size: 16px; text-shadow: 1px 1px 0 #fff;"></i>`, iconSize: [16, 16], iconAnchor: [8, 16], popupAnchor: [0, -18] }); 
         }
-        
-        document.getElementById('setoresLayerToggle').addEventListener('change', function(e) {
-            if (e.target.checked) { loadSetoresGeoJSON(); } else { if (setoresLayer !== null) { mymap.removeLayer(setoresLayer); } }
-        });
-        
-        // RUÍDO AEROPORTO
-        function createRuidoAeroportoLegend() {
-            ruidoAeroportoLegend = L.control({ position: 'bottomright' });
-            const roxoTracejado = '#800080';
-            
-            ruidoAeroportoLegend.onAdd = function (map) {
+
+        // =======================================================
+        // 5. POPUP SYSTEM
+        // =======================================================
+        function createStyledPopupContent(title, props) {
+            let html = `<div class="popup-header">${title}</div><div class="popup-data">`;
+            const displayFields = [
+                { key: 'Tipo', label: 'Tipo' }, { key: 'TIPO', label: 'Tipo' }, { key: 'tipo', label: 'Tipo' },
+                { key: 'Categoria', label: 'Categoria' }, { key: 'Dependênc', label: 'Dependência' },
+                { key: 'Endereço', label: 'Endereço' }, { key: 'nome_bacia', label: 'Bacia' },
+                { key: 'situacao', label: 'Situação' }
+            ];
+            for (const field of displayFields) {
+                if (props[field.key]) { html += `<p><strong>${field.label}:</strong> ${props[field.key]}</p>`; }
+            }
+            return html + "</div>";
+        }
+
+        // =======================================================
+        // 6. LEGENDAS
+        // =======================================================
+
+        function createMercadosLegend() {
+            if (mercadosLegend) return mercadosLegend;
+            mercadosLegend = L.control({ position: 'bottomright' });
+            mercadosLegend.onAdd = function() {
                 var div = L.DomUtil.create('div', 'info legend professional');
-                
-                div.innerHTML = '<div class="legend-header">Ruído do Aeroporto</div>';
-                
+                div.innerHTML = '<div class="legend-header">Abastecimento</div>';
                 var content = '<div class="legend-content">';
-                content += '<div class="legend-item">';
-                // Usa a classe legend-dash-box para linhas tracejadas
-                content += '<div class="legend-dash-box" style="border-color: ' + roxoTracejado + '; color: ' + roxoTracejado + ';"></div>'; 
-                content += '<span>Zona de Proteção</span>';
+                content += '<div class="legend-item"><div class="legend-color-box" style="background:#FF0000; border: 1px solid #8B0000;"></div><span>Mercado Público</span></div>';
+                content += '<div class="legend-item"><div class="legend-color-box" style="background:#008000; border: 1px solid #004d00;"></div><span>Feira Livre</span></div>';
+                content += '<div class="legend-item"><div class="legend-color-box" style="background:#800080; border: 1px solid #4B0082;"></div><span>Abatedouro</span></div>';
                 content += '</div>';
-                content += '</div>';
-                
                 div.innerHTML += content;
                 return div;
             };
-            return ruidoAeroportoLegend;
+            return mercadosLegend;
         }
 
-        function loadRuidoAeroportoGeoJSON(addToMap = false) {
-            if (ruidoAeroportoLayer !== null) { if (document.getElementById('ruidoAeroportoLayerToggle').checked) { ruidoAeroportoLayer.addTo(mymap); } return; }
-
-            fetch('data/ruido_urbano.geojson') 
-                .then(response => { if (!response.ok) { throw new Error('Erro HTTP: ' + response.status); } return response.json(); })
-                .then(data => {
-                    ruidoAeroportoLayer = L.geoJson(data, { style: styleRuidoAeroporto, onEachFeature: onEachRuidoAeroportoFeature });
-                    if (layerControl) { layerControl.addOverlay(ruidoAeroportoLayer, "Ruído Aeroporto"); }
-                    if (document.getElementById('ruidoAeroportoLayerToggle').checked) { ruidoAeroportoLayer.addTo(mymap); }
-                })
-                .catch(error => { console.error('🔴 ERRO RUÍDO AEROPORTO:', error); document.getElementById('ruidoAeroportoLayerToggle').checked = false; });
-        }
-        
-        document.getElementById('ruidoAeroportoLayerToggle').addEventListener('change', function(e) {
-            if (e.target.checked) {
-                loadRuidoAeroportoGeoJSON(true); 
-                ruidoAeroportoLegend = createRuidoAeroportoLegend();
-                ruidoAeroportoLegend.addTo(mymap);
-            } else {
-                if (ruidoAeroportoLayer !== null) { mymap.removeLayer(ruidoAeroportoLayer); }
-                if (ruidoAeroportoLegend !== null) { mymap.removeControl(ruidoAeroportoLegend); ruidoAeroportoLegend = null; }
-            }
-        });
-        
-        // ZONA URBANA
-        function loadZonaUrbanaGeoJSON(addToMap = false) {
-            if (zonaUrbanaLayer !== null) { if (document.getElementById('zonaUrbanaLayerToggle').checked) { zonaUrbanaLayer.addTo(mymap); } return; }
-
-            fetch('data/zona_urbana.geojson') 
-                .then(response => { if (!response.ok) { throw new Error('Erro HTTP: ' + response.status); } return response.json(); })
-                .then(data => {
-                    zonaUrbanaLayer = L.geoJson(data, { style: styleZonaUrbana, onEachFeature: onEachZonaUrbanaFeature });
-                    if (layerControl) { layerControl.addOverlay(zonaUrbanaLayer, "Zona Urbana"); }
-                    if (document.getElementById('zonaUrbanaLayerToggle').checked) { zonaUrbanaLayer.addTo(mymap); }
-                })
-                .catch(error => { console.error('🔴 ERRO ZONA URBANA:', error); document.getElementById('zonaUrbanaLayerToggle').checked = false; });
-        }
-        
-        document.getElementById('zonaUrbanaLayerToggle').addEventListener('change', function(e) {
-            if (e.target.checked) { loadZonaUrbanaGeoJSON(true); } else { if (zonaUrbanaLayer !== null) { mymap.removeLayer(zonaUrbanaLayer); } }
-        });
-        
-        // ÁREAS DE RISCO
-        function createAreasRiscoLegend() {
-            areasRiscoLegend = L.control({ position: 'bottomright' });
-            const corRisco = '#FF0000';
-            
-            areasRiscoLegend.onAdd = function (map) {
+        // --- NOVA LEGENDA: ATERRO ---
+        function createAterroLegend() {
+            if (aterroLegend) return aterroLegend;
+            aterroLegend = L.control({ position: 'bottomright' });
+            aterroLegend.onAdd = function() {
                 var div = L.DomUtil.create('div', 'info legend professional');
-                
-                div.innerHTML = '<div class="legend-header">Áreas de Risco</div>';
-                
-                var content = '<div class="legend-content">';
-                content += '<div class="legend-item">';
-                content += '<div class="legend-color-box" style="background: ' + corRisco + '; border: 1px solid #8B0000;"></div>'; 
-                content += '<span>Área Mapeada</span>';
-                content += '</div>';
-                content += '</div>';
-                
-                div.innerHTML += content;
+                div.innerHTML = '<div class="legend-header">Saneamento</div><div class="legend-content">';
+                div.innerHTML += '<div class="legend-item"><div class="legend-color-box" style="background:#795548; border: 1px dashed #3E2723;"></div><span>Aterro Sanitário</span></div></div>';
                 return div;
             };
-            return areasRiscoLegend;
+            return aterroLegend;
         }
 
-        function loadAreasDeRiscoGeoJSON(addToMap = false) {
-            if (areasDeRiscoLayer !== null) { if (document.getElementById('areasDeRiscoLayerToggle').checked) { areasDeRiscoLayer.addTo(mymap); } return; }
-
-            fetch('data/areas_de_risco.geojson') 
-                .then(response => { if (!response.ok) { throw new Error('Erro HTTP: ' + response.status); } return response.json(); })
-                .then(data => {
-                    areasDeRiscoLayer = L.geoJson(data, { style: styleAreasDeRisco, onEachFeature: onEachAreasDeRiscoFeature });
-                    if (layerControl) { layerControl.addOverlay(areasDeRiscoLayer, "Áreas de Risco"); }
-                    if (document.getElementById('areasDeRiscoLayerToggle').checked) { areasDeRiscoLayer.addTo(mymap); }
-                })
-                .catch(error => { console.error('🔴 ERRO ÁREAS DE RISCO:', error); document.getElementById('areasDeRiscoLayerToggle').checked = false; });
-        }
-        
-        document.getElementById('areasDeRiscoLayerToggle').addEventListener('change', function(e) {
-            if (e.target.checked) {
-                loadAreasDeRiscoGeoJSON(true);
-                areasRiscoLegend = createAreasRiscoLegend();
-                areasRiscoLegend.addTo(mymap);
-            } else {
-                if (areasDeRiscoLayer !== null) { mymap.removeLayer(areasDeRiscoLayer); }
-                if (areasRiscoLegend !== null) { mymap.removeControl(areasRiscoLegend); areasRiscoLegend = null; }
-            }
-        });
-
-        // PRAÇAS E PARQUES
-        function createPracasLegend() {
-            pracasLegend = L.control({ position: 'bottomright' }); 
-            const lightGreen = '#90EE90'; const blue = '#4169E1'; const gold = '#FFD700';     
-            const greenBorder = '#3CB371'; const blueBorder = '#191970'; const goldBorder = '#DAA520';
-
-            pracasLegend.onAdd = function (map) {
+        function createSaudeLegend() {
+            if (saudeLegend) return saudeLegend;
+            saudeLegend = L.control({ position: 'bottomright' });
+            saudeLegend.onAdd = function() {
                 var div = L.DomUtil.create('div', 'info legend professional');
-                
-                div.innerHTML = '<div class="legend-header">Praças e Equipamentos</div>';
-                
-                var content = '<div class="legend-content">';
-                
-                // Praças
-                content += '<div class="legend-item">';
-                content += `<div class="legend-color-box" style="background: ${lightGreen}; border-color: ${greenBorder};"></div>`;
-                content += '<span>Praças</span>';
-                content += '</div>';
-
-                // Parques
-                content += '<div class="legend-item">';
-                content += `<div class="legend-color-box" style="background: ${blue}; border-color: ${blueBorder};"></div>`;
-                content += '<span>Parques</span>';
-                content += '</div>';
-                
-                // Calçadões
-                content += '<div class="legend-item">';
-                content += `<div class="legend-color-box" style="background: ${gold}; border-color: ${goldBorder};"></div>`;
-                content += '<span>Calçadões</span>';
-                content += '</div>';
-                
-                content += '</div>'; 
-                
-                div.innerHTML += content;
+                div.innerHTML = '<div class="legend-header">Saúde</div><div class="legend-content">';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-hospital" style="color:#007BFF; margin-right:8px;"></i><span>Hospital</span></div>';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-briefcase-medical" style="color:#DC143C; margin-right:8px;"></i><span>Serviço</span></div>';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-building" style="color:#FF8C00; margin-right:8px;"></i><span>Secretaria</span></div>';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-star-of-life" style="color:#9C27B0; margin-right:8px;"></i><span>Centro de Ref.</span></div>';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-clinic-medical" style="color:#008000; margin-right:8px;"></i><span>UBS / Posto</span></div></div>';
                 return div;
             };
-            return pracasLegend;
+            return saudeLegend;
         }
-        function loadPracasGeoJSON() {
-            const pracasFilePath = 'data/pracas.geojson'; 
+        
+        function createEscolasLegend() {
+            if (escolasLegend) return escolasLegend;
+            escolasLegend = L.control({ position: 'bottomright' });
+            escolasLegend.onAdd = function() {
+                var div = L.DomUtil.create('div', 'info legend professional');
+                div.innerHTML = '<div class="legend-header">Unidades de Ensino</div><div class="legend-content">';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-school" style="color: #FFB347; margin-right:8px;"></i><span>Municipal</span></div>';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-school" style="color: #28A745; margin-right:8px;"></i><span>Estadual</span></div>';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-school" style="color: #6F42C1; margin-right:8px;"></i><span>Privada</span></div>';
+                div.innerHTML += '<div class="legend-item icon"><i class="fas fa-school" style="color: #007BFF; margin-right:8px;"></i><span>Federal</span></div></div>';
+                return div;
+            };
+            return escolasLegend;
+        }
 
-            if (pracasLayer !== null) { if (document.getElementById('pracasLayerToggle').checked) { pracasLayer.addTo(mymap); } return; }
-            
-            fetch(pracasFilePath)
-                .then(response => { if (!response.ok) { throw new Error('Erro HTTP: ' + response.status); } return response.json(); })
-                .then(data => {
-                    pracasLayer = L.geoJson(data, { style: pracasStyle, onEachFeature: onEachPracaFeature }); 
-                    if (layerControl) { layerControl.addOverlay(pracasLayer, "Praças e Parques"); } 
-                    if (document.getElementById('pracasLayerToggle').checked) { pracasLayer.addTo(mymap); }
-                })
-                .catch(error => { console.error('🔴 ERRO PRAÇAS:', error); document.getElementById('pracasLayerToggle').checked = false; });
-        }
-        
-        document.getElementById('pracasLayerToggle').addEventListener('change', function(e) {
-            if (e.target.checked) {
-                loadPracasGeoJSON();
-                pracasLegend = createPracasLegend();
-                pracasLegend.addTo(mymap);
-            } else {
-                if (pracasLayer !== null) { mymap.removeLayer(pracasLayer); }
-                if (pracasLegend !== null) { mymap.removeControl(pracasLegend); pracasLegend = null; }
-            }
-        });
-        
-        // CRECHES (COM BUFFER)
         function createBufferLegend() {
-            bufferLegend = L.control({ position: 'bottomright' });
-            const bufferColor = '#F5F5DC';
-            const crecheColor = '#DC143C';
-            
-            bufferLegend.onAdd = function (map) {
-                var div = L.DomUtil.create('div', 'info legend professional');
-                
-                div.innerHTML = '<div class="legend-header">Creches Municipais</div>';
-                
-                var content = '<div class="legend-content">';
-                
-                // Ícone
-                content += '<div class="legend-item icon">';
-                content += `<i class="fas fa-graduation-cap" style="color: ${crecheColor}; font-size: 16px; margin-right: 8px;"></i>`;
-                content += '<span>Localização da Creche</span>';
-                content += '</div>';
-                
-                // Buffer
-                content += '<div class="legend-item">';
-                content += `<div class="legend-color-box" style="background: ${bufferColor}; border: 1px solid #A0522D; border-radius: 50%;"></div>`;
-                content += '<span>Raio de Abrangência (1km)</span>';
-                content += '</div>';
-                
-                content += '</div>'; 
-                
-                div.innerHTML += content;
+            if(bufferLegend) return bufferLegend;
+            bufferLegend = L.control({position:'bottomright'});
+            bufferLegend.onAdd = () => {
+                let div = L.DomUtil.create('div', 'info legend professional');
+                div.innerHTML = '<div class="legend-header">Creches</div><div class="legend-content"><div class="legend-item icon"><div style="width: 14px; height: 14px; background-color: #DC143C; border: 2px solid white; border-radius: 50%; box-sizing: border-box; display: inline-block; margin-right: 8px; box-shadow: 0 0 2px rgba(0,0,0,0.2);"></div><span>Creche</span></div><div class="legend-item"><div class="legend-color-box" style="background:#F5F5DC; border:1px solid #A0522D; border-radius:50%"></div><span>Raio 1km</span></div></div>';
                 return div;
             };
             return bufferLegend;
         }
-
-        function loadCrechesGeoJSON() {
-            const crechesFilePath = 'data/creches.geojson'; 
-
-            if (crechesLayer !== null) {
-                if (document.getElementById('crechesLayerToggle').checked) { 
-                    crechesLayer.addTo(mymap);
-                    if (bufferCrechesLayer) { bufferCrechesLayer.addTo(mymap); } 
-                }
-                return; 
-            }
-            
-            fetch(crechesFilePath)
-                .then(response => { if (!response.ok) { throw new Error('Erro HTTP: ' + response.status); } return response.json(); })
-                .then(data => {
-                    const bufferedFeatures = [];
-                    data.features.forEach(feature => {
-                        let coords = feature.geometry.coordinates[0]; // Assumindo MultiPoint
-                        if (!coords || coords.length < 2) { coords = feature.geometry.coordinates; } // Se for Point
-                        if (!coords || coords.length < 2) { return; }
-                        
-                        const point = turf.point(coords, feature.properties);
-                        const buffer = turf.buffer(point, 1, { units: 'kilometers' });
-                        bufferedFeatures.push(buffer);
-                    });
-                    
-                    const bufferGeoJson = turf.featureCollection(bufferedFeatures);
-
-                    bufferCrechesLayer = L.geoJson(bufferGeoJson, { 
-                        style: bufferCrechesStyle,
-                        onEachFeature: function(feature, layer) {
-                            if (feature.properties && feature.properties.nome) {
-                                layer.bindPopup(`<strong>Raio de Abrangência (1km)</strong><br>Creche: ${feature.properties.nome}`);
-                            }
-                        }
-                    });
-
-                    crechesLayer = L.geoJson(data, { 
-                        pointToLayer: function (feature, latlng) { return L.marker(latlng, { icon: crechesIcon(feature) }); },
-                        onEachFeature: onEachCrecheFeature
-                    });
-                    
-                    if (layerControl) { 
-                        layerControl.addOverlay(crechesLayer, "Creches (Pontos)");
-                        layerControl.addOverlay(bufferCrechesLayer, "Creches (Raio de 1km)"); 
-                    } 
-                    
-                    if (document.getElementById('crechesLayerToggle').checked) { 
-                        bufferCrechesLayer.addTo(mymap);
-                        crechesLayer.addTo(mymap); 
-                    }
-                })
-                .catch(error => { console.error('🔴 ERRO CRECHES:', error); document.getElementById('crechesLayerToggle').checked = false; });
-        }
         
-        document.getElementById('crechesLayerToggle').addEventListener('change', function(e) {
-            if (e.target.checked) {
-                loadCrechesGeoJSON(); 
-                if (!bufferLegend) { bufferLegend = createBufferLegend(); bufferLegend.addTo(mymap); }
-                if (bufferCrechesLayer && !mymap.hasLayer(bufferCrechesLayer)) { bufferCrechesLayer.addTo(mymap); }
-                if (crechesLayer && !mymap.hasLayer(crechesLayer)) { crechesLayer.addTo(mymap); }
-            } else {
-                if (crechesLayer !== null) { mymap.removeLayer(crechesLayer); } 
-                if (bufferCrechesLayer !== null) { mymap.removeLayer(bufferCrechesLayer); }
-                if (bufferLegend !== null) { mymap.removeControl(bufferLegend); bufferLegend = null; }
-            }
-        });
-
-
-        // ITINERÁRIO
-        function createItinerarioLegend() {
-            itinerarioLegend = L.control({ position: 'bottomright' });
-            const carameloTostado = '#A0522D';
-            const verdePadrao = '#00FF00';
-
-            itinerarioLegend.onAdd = function (map) {
+        function createPracasLegend() {
+            if (pracasLegend) return pracasLegend;
+            pracasLegend = L.control({ position: 'bottomleft' });
+            pracasLegend.onAdd = function() {
                 var div = L.DomUtil.create('div', 'info legend professional');
-                
-                div.innerHTML = '<div class="legend-header">Itinerários Ativos</div>';
-                
-                var content = '<div class="legend-content">';
-                
-                // Linha 5607
-                content += '<div class="legend-item">';
-                content += `<div class="legend-line" style="background: ${verdePadrao}; border-color: ${verdePadrao};"></div>`;
-                content += '<span>5607 - Plano de Vida - VIA OESTE</span>';
-                content += '</div>';
-                
-                // Linha Heitel
-                content += '<div class="legend-item">';
-                content += `<div class="legend-line" style="background: ${carameloTostado}; border-color: ${carameloTostado};"></div>`;
-                content += '<span>Heitel/Centro</span>';
-                content += '</div>';
-                
-                content += '</div>';
-                
-                div.innerHTML += content;
+                div.innerHTML = '<div class="legend-header">Lazer</div><div class="legend-content">';
+                div.innerHTML += '<div class="legend-item"><div class="legend-color-box" style="background:#90EE90; border: 1px solid #3CB371;"></div><span>Praças</span></div>';
+                div.innerHTML += '<div class="legend-item"><div class="legend-color-box" style="background:#4169E1; border: 1px solid #191970;"></div><span>Parques</span></div>';
+                div.innerHTML += '<div class="legend-item"><div class="legend-color-box" style="background:#FFD700; border: 1px solid #DAA520;"></div><span>Calçadões</span></div></div>';
                 return div;
             };
-            return itinerarioLegend;
+            return pracasLegend;
         }
 
-        function filterItinerario(feature) {
-            return feature.properties && (feature.properties.Linha === 5607 || feature.properties.Linha === 'Heitel');
-        }
-
-        function loadItinerarioGeoJSON() {
-            const itinerarioFilePath = 'data/itinerario.geojson'; 
-
-            if (itinerarioLayer !== null) { if (document.getElementById('itinerarioLayerToggle').checked) { itinerarioLayer.addTo(mymap); } return; }
-            
-            fetch(itinerarioFilePath)
-                .then(response => { if (!response.ok) { throw new Error('Erro HTTP: ' + response.status); } return response.json(); })
-                .then(data => {
-                    itinerarioLayer = L.geoJson(data, { style: itinerarioStyle, filter: filterItinerario, onEachFeature: onEachItinerarioFeature });
-                    if (layerControl) { layerControl.addOverlay(itinerarioLayer, "Itinerários de Ônibus"); }
-                    if (document.getElementById('itinerarioLayerToggle').checked) { itinerarioLayer.addTo(mymap); }
-                })
-                .catch(error => { console.error('🔴 ERRO ITINERÁRIO:', error); document.getElementById('itinerarioLayerToggle').checked = false; });
-        }
-
-        document.getElementById('itinerarioLayerToggle').addEventListener('change', function(e) {
-            if (e.target.checked) {
-                loadItinerarioGeoJSON();
-                itinerarioLegend = createItinerarioLegend();
-                itinerarioLegend.addTo(mymap);
-            } else {
-                if (itinerarioLayer !== null) { mymap.removeLayer(itinerarioLayer); }
-                if (itinerarioLegend !== null) { mymap.removeControl(itinerarioLegend); itinerarioLegend = null; }
-            }
-        });
-        
-        // BACIAS
         function createBaciasLegend() {
-            baciasLegend = L.control({ position: 'bottomright' });
-            const miriri = '#FFFFBA'; 
-            const paraiba = '#FFB3BA'; 
-            const gramame = '#BAE1FF'; 
-            const boundaryColor = '#666';
-
-            baciasLegend.onAdd = function (map) {
+            if (baciasLegend) return baciasLegend;
+            baciasLegend = L.control({ position: 'bottomleft' });
+            baciasLegend.onAdd = function() {
                 var div = L.DomUtil.create('div', 'info legend professional');
-                
-                div.innerHTML = '<div class="legend-header">Bacias Hidrográficas</div>';
-                
-                var content = '<div class="legend-content">';
-                
-                // Item Rio Miriri
-                content += '<div class="legend-item">';
-                content += `<div class="legend-color-box" style="background: ${miriri}; border-color: ${boundaryColor};"></div>`;
-                content += '<span>Rio Miriri</span>';
-                content += '</div>';
-
-                // Item Rio Paraíba
-                content += '<div class="legend-item">';
-                content += `<div class="legend-color-box" style="background: ${paraiba}; border-color: ${boundaryColor};"></div>`;
-                content += '<span>Rio Paraíba</span>';
-                content += '</div>';
-
-                // Item Rio Gramame
-                content += '<div class="legend-item">';
-                content += `<div class="legend-color-box" style="background: ${gramame}; border-color: ${boundaryColor};"></div>`;
-                content += '<span>Rio Gramame</span>';
-                content += '</div>';
-                
-                content += '</div>'; 
-                
-                div.innerHTML += content;
+                div.innerHTML = '<div class="legend-header">Bacias Hidrográficas</div><div class="legend-content">';
+                div.innerHTML += '<div class="legend-item"><div class="legend-color-box" style="background:#FFFFBA;"></div><span>Miriri</span></div>';
+                div.innerHTML += '<div class="legend-item"><div class="legend-color-box" style="background:#FFB3BA;"></div><span>Paraíba</span></div>';
+                div.innerHTML += '<div class="legend-item"><div class="legend-color-box" style="background:#BAE1FF;"></div><span>Gramame</span></div></div>';
                 return div;
             };
             return baciasLegend;
         }
 
-        function loadBaciasGeoJSON() {
-            const baciasFilePath = 'data/bacias_hidrograficas.geojson'; 
-
-            if (baciasLayer !== null) { if (document.getElementById('baciasLayerToggle').checked) { baciasLayer.addTo(mymap); } return; }
-            
-            fetch(baciasFilePath)
-                .then(response => { if (!response.ok) { throw new Error('Erro HTTP: ' + response.status); } return response.json(); })
-                .then(data => {
-                    baciasLayer = L.geoJson(data, { style: baciasStyle, onEachFeature: onEachBaciaFeature });
-                    if (layerControl) { layerControl.addOverlay(baciasLayer, "Bacias Hidrográficas"); }
-                    if (document.getElementById('baciasLayerToggle').checked) { baciasLayer.addTo(mymap); }
-                })
-                .catch(error => { console.error('🔴 ERRO BACIAS:', error); document.getElementById('baciasLayerToggle').checked = false; });
-        }
-
-        document.getElementById('baciasLayerToggle').addEventListener('change', function(e) {
-            if (e.target.checked) {
-                loadBaciasGeoJSON();
-                baciasLegend = createBaciasLegend();
-                baciasLegend.addTo(mymap);
-            } else {
-                if (baciasLayer !== null) { mymap.removeLayer(baciasLayer); }
-                if (baciasLegend !== null) { mymap.removeControl(baciasLegend); baciasLegend = null; }
-            }
-        });
-
-
-        // =========================================================================
-        // FUNÇÕES DE SAÚDE (UBS)
-        // =========================================================================
-        
-        function createSaudeLegend() {
-            saudeLegend = L.control({ position: 'bottomright' });
-            const saudeColor = '#008000';
-
-            saudeLegend.onAdd = function (map) {
+        function createItinerarioLegend() {
+            if (itinerarioLegend) return itinerarioLegend;
+            itinerarioLegend = L.control({ position: 'bottomleft' });
+            itinerarioLegend.onAdd = function() {
                 var div = L.DomUtil.create('div', 'info legend professional');
-                
-                div.innerHTML = '<div class="legend-header">Equipamentos de Saúde</div>';
-                
-                var content = '<div class="legend-content">';
-                
-                content += '<div class="legend-item icon">';
-                content += `<i class="fas fa-clinic-medical" style="color: ${saudeColor}; font-size: 16px; margin-right: 8px;"></i>`;
-                content += '<span>Postos de Saúde / UBS</span>';
-                content += '</div>'; 
-                
-                content += '</div>'; 
-                
-                div.innerHTML += content;
+                div.innerHTML = '<div class="legend-header">Itinerário</div><div class="legend-content">';
+                div.innerHTML += '<div class="legend-item"><div class="legend-line" style="background:#00FF00; border: none; height: 4px; width: 20px;"></div><span>Linha Comum</span></div>';
+                div.innerHTML += '<div class="legend-item"><div class="legend-line" style="background:#A0522D; border: none; height: 4px; width: 20px;"></div><span>Linha Heitel</span></div></div>';
                 return div;
             };
-            return saudeLegend;
+            return itinerarioLegend;
         }
 
-        // CARREGAMENTO DO saude_santarita.geojson (Única Fonte)
-        function loadSaudeGeoJSON() {
-            const saudeFilePath = 'data/saude_santarita.geojson'; 
-            
-            // Se já carregamos, não precisamos fazer fetch novamente.
-            if (postosSaudeLayer !== null) {
-                return Promise.resolve(); 
-            }
-            
-            console.log('[SAÚDE] Iniciando fetch do GeoJSON...');
-
-            return fetch(saudeFilePath)
-                .then(response => {
-                    if (!response.ok) { 
-                        throw new Error('Erro HTTP: ' + response.status + '. Arquivo esperado: data/saude_santarita.geojson'); 
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('✅ [SAÚDE] GeoJSON de Saúde carregado. Separando camadas...'); 
-
-                    // MODIFICAÇÃO CHAVE: Remove a filtragem rígida para garantir que os pontos apareçam.
-                    const postosFeatures = data.features.filter(f => {
-                        const tipo = f.properties && f.properties.tipo ? String(f.properties.tipo).trim().toUpperCase() : '';
-                        
-                        // Versão para carregar TODOS os pontos
-                        return f.properties; 
-                    });
-                    
-                    console.log(`🔍 [SAÚDE] Pontos encontrados na camada Postos de Saúde: ${postosFeatures.length}`);
-
-                    // 1. CAMADA POSTOS DE SAÚDE (UBS)
-                    postosSaudeLayer = L.geoJson({ type: 'FeatureCollection', features: postosFeatures }, {
-                        pointToLayer: function (feature, latlng) { return L.marker(latlng, { icon: postosSaudeIcon(feature) }); },
-                        onEachFeature: onEachPostoSaudeFeature
-                    });
-                    
-                    if (layerControl) { 
-                        layerControl.addOverlay(postosSaudeLayer, "Postos de Saúde"); 
-                    } 
-                })
-                .catch(error => {
-                    console.error('🔴 ERRO FATAL NO CARREGAMENTO DO SAÚDE GEOJSON:', error);
-                    document.getElementById('postosSaudeLayerToggle').checked = false;
-                    throw error; 
-                });
+        function createGeralLegend() {
+            if (window.geralLegend) return window.geralLegend;
+            window.geralLegend = L.control({ position: 'topright' });
+            window.geralLegend.onAdd = function() {
+                var div = L.DomUtil.create('div', 'info legend professional');
+                div.innerHTML = '<div class="legend-header">Geometrias Diversas</div><div class="legend-content" id="GeralLegendContent"></div>';
+                return div;
+            };
+            return window.geralLegend;
         }
 
-        function handleSaudeToggle(e) {
-            
-            const postosChecked = document.getElementById('postosSaudeLayerToggle').checked;
-            
-            // Garantir que os dados foram carregados antes de tentar manipulá-los
-            if (postosSaudeLayer === null) {
-                loadSaudeGeoJSON().then(() => {
-                    if (document.getElementById('postosSaudeLayerToggle').checked) {
-                        handleSaudeToggle(e); 
-                    }
-                }).catch(() => {
-                    document.getElementById('postosSaudeLayerToggle').checked = false;
-                });
-                return;
-            }
-            
-            // Gerencia a visibilidade do Postos de Saúde 
-            if (postosSaudeLayer) {
-                if (postosChecked) { postosSaudeLayer.addTo(mymap); } else { mymap.removeLayer(postosSaudeLayer); }
-            }
 
-            // Gerencia a legenda
-            if (postosChecked) {
-                if (!saudeLegend) {
-                    saudeLegend = createSaudeLegend();
-                    saudeLegend.addTo(mymap);
+        // --- FUNÇÕES UTILITÁRIAS ---
+        function toggleLegend(legendControl, createFunc, show) {
+            if (show) {
+                if (!legendControl) legendControl = createFunc();
+                legendControl.addTo(mymap);
+            } else {
+                if (legendControl) { mymap.removeControl(legendControl); legendControl = null; }
+            }
+            return legendControl; 
+        }
+
+        function updateGeralLegend(layerName, show) {
+            if (show && !window.geralLegend) { window.geralLegend = createGeralLegend(); window.geralLegend.addTo(mymap); }
+            const contentDiv = document.getElementById('GeralLegendContent');
+            if (!contentDiv) return;
+
+            const itemId = `legend-item-${layerName}`;
+            let item = document.getElementById(itemId);
+
+            const styles = {
+                'limitesLayer': { html: '<div class="legend-dash-box" style="border: 3px dashed red; height:0;"></div>', text: 'Limite Municipal' },
+                'bairrosLayer': { html: '<div class="legend-dash-box" style="border: 2px dashed #666; height:0;"></div>', text: 'Bairro' },
+                'setoresLayer': { html: '<div class="legend-color-box" style="background:#00ccff; border: 1px solid #333333;"></div>', text: 'Setores Censitários' },
+                'ruidoAeroportoLayer': { html: '<div class="legend-dash-box" style="color:#800080; border-color:#800080; background:#8c2d0430;"></div>', text: 'Ruído Aeroporto' },
+                'zonaUrbanaLayer': { html: '<div class="legend-color-box" style="background:#e0f3db; border: 1px solid #6c886c;"></div>', text: 'Zona Urbana' },
+                'areasDeRiscoLayer': { html: '<div class="legend-color-box" style="background:#FF0000; border: 1px solid #8B0000;"></div>', text: 'Área de Risco' }
+            };
+
+            if (show) {
+                if (!item && styles[layerName]) {
+                    item = document.createElement('div'); item.className = 'legend-item'; item.id = itemId;
+                    item.innerHTML = `${styles[layerName].html}<span>${styles[layerName].text}</span>`; contentDiv.appendChild(item);
                 }
             } else {
-                if (saudeLegend !== null) {
-                    mymap.removeControl(saudeLegend);
-                    saudeLegend = null; 
-                }
+                if (item) { contentDiv.removeChild(item); }
             }
+            if (contentDiv.children.length === 0 && window.geralLegend) { mymap.removeControl(window.geralLegend); window.geralLegend = null; }
+        }
+
+
+        // =======================================================
+        // 7. CARREGAMENTO DE CAMADAS (LOADERS)
+        // =======================================================
+        
+        function loadGenericLayer(path, toggleId, styleFunc, onEachFunc, layerVarName, legendManager) {
+            let toggle = document.getElementById(toggleId); let checked = toggle.checked;
+            if (window[layerVarName]) { if (checked) window[layerVarName].addTo(mymap); else mymap.removeLayer(window[layerVarName]); }
+            if (!checked && !window[layerVarName]) {
+                if (typeof legendManager === 'function') { const actualLegendVarName = layerVarName.replace('Layer', 'Legend'); window[actualLegendVarName] = toggleLegend(window[actualLegendVarName], legendManager, checked); }
+                return;
+            }
+            if (typeof legendManager === 'function') { const actualLegendVarName = layerVarName.replace('Layer', 'Legend'); window[actualLegendVarName] = toggleLegend(window[actualLegendVarName], legendManager, checked); } 
+            else if (legendManager === 'geral') { updateGeralLegend(layerVarName, checked); }
+            if (window[layerVarName]) return;
+            fetch(path).then(r => r.json()).then(d => { window[layerVarName] = L.geoJson(d, { style: styleFunc, onEachFeature: onEachFunc }); if (checked) window[layerVarName].addTo(mymap); }).catch(e => console.log(`Erro ao carregar ${layerVarName}:`, e));
+        }
+
+        // Limites & Bairros
+        function loadLimites() {
+            let checked = document.getElementById('limitesLayerToggle').checked;
+            if (limitesLayer) { if(checked) limitesLayer.addTo(mymap); else mymap.removeLayer(limitesLayer); updateGeralLegend('limitesLayer', checked); return; }
+            if (!checked) return;
+            fetch('data/Limite_municipal.geojson').then(r=>r.json()).then(d => { limitesLayer = L.geoJson(d, { style: limitesStyle }).addTo(mymap); updateGeralLegend('limitesLayer', checked); });
+        }
+        function loadBairros() {
+            let checked = document.getElementById('bairrosLayerToggle').checked;
+            if (bairrosLayer) { if(checked) bairrosLayer.addTo(mymap); else mymap.removeLayer(bairrosLayer); if(bairrosLayer) bairrosLayer.eachLayer(l => checked ? l.openTooltip() : l.closeTooltip()); updateGeralLegend('bairrosLayer', checked); return; }
+            if (!checked) return;
+            fetch('data/Bairros.geojson').then(r=>r.json()).then(d => {
+                bairrosLayer = L.geoJson(d, { style: bairrosStyle, onEachFeature: (f,l) => { l.bindPopup(createStyledPopupContent("Bairro", f.properties)); if(f.properties.Nome) l.bindTooltip(f.properties.Nome, {permanent:true, className:'bairro-label', direction:'center'}); } }).addTo(mymap);
+                updateGeralLegend('bairrosLayer', checked);
+            });
         }
         
-        // Event Listener para Postos de Saúde 
-        document.getElementById('postosSaudeLayerToggle').addEventListener('change', handleSaudeToggle);
+        // Equipamentos
+        function loadEscolasGeoJSON() {
+            let checked = document.getElementById('escolasLayerToggle').checked;
+            if (escolasLayer) { if (checked) escolasLayer.addTo(mymap); else mymap.removeLayer(escolasLayer); escolasLegend = toggleLegend(escolasLegend, createEscolasLegend, checked); return; }
+            if(!checked) return;
+            fetch('data/escolas.geojson').then(r => r.json()).then(data => {
+                escolasLayer = L.geoJson(data, { pointToLayer: (f, latlng) => L.marker(latlng, { icon: escolasIcon(f) }), onEachFeature: (f, l) => l.bindPopup(createStyledPopupContent(f.properties.Escola || "Escola", f.properties)) });
+                if (checked) { escolasLayer.addTo(mymap); escolasLegend = toggleLegend(escolasLegend, createEscolasLegend, true); }
+            });
+        }
+        function loadCreches() {
+            let checked = document.getElementById('crechesLayerToggle').checked;
+            if(crechesLayer) { if(checked) { crechesLayer.addTo(mymap); bufferCrechesLayer.addTo(mymap); } else { mymap.removeLayer(crechesLayer); mymap.removeLayer(bufferCrechesLayer); } bufferLegend = toggleLegend(bufferLegend, createBufferLegend, checked); return; }
+            if(!checked) return;
+            fetch('data/creches.geojson').then(r=>r.json()).then(d => {
+                const validFeatures = d.features.filter(f => f.geometry && Array.isArray(f.geometry.coordinates) && f.geometry.coordinates.length >= 2);
+                if (validFeatures.length > 0) { try { let buffs = validFeatures.map(f => turf.buffer(turf.point(f.geometry.coordinates), 1, {units:'kilometers'})); bufferCrechesLayer = L.geoJson(turf.featureCollection(buffs), { style: bufferCrechesStyle }); } catch (err) { bufferCrechesLayer = L.layerGroup([]); } } else { bufferCrechesLayer = L.layerGroup([]); }
+                crechesLayer = L.geoJson(d, { pointToLayer: (f,l) => L.marker(l, {icon: crechesIcon()}), onEachFeature: (f,l) => l.bindPopup(createStyledPopupContent("Creche", f.properties)) });
+                if(checked){ bufferCrechesLayer.addTo(mymap); crechesLayer.addTo(mymap); bufferLegend = toggleLegend(bufferLegend, createBufferLegend, true); if (validFeatures.length > 0) { const c = validFeatures[0].geometry.coordinates; if (c[1] < -6 && c[1] > -8) mymap.flyTo([c[1], c[0]], 13); } }
+            }).catch(e => { document.getElementById('crechesLayerToggle').checked = false; });
+        }
+        function loadSaude() {
+            let checked = document.getElementById('postosSaudeLayerToggle').checked;
+            if (postosSaudeLayer) { if (checked) postosSaudeLayer.addTo(mymap); else mymap.removeLayer(postosSaudeLayer); saudeLegend = toggleLegend(saudeLegend, createSaudeLegend, checked); return; }
+            if (!checked) return;
+            fetch('data/saude_santarita.geojson').then(r => r.json()).then(d => {
+                postosSaudeLayer = L.geoJson(d, { pointToLayer: (f,l) => L.marker(l, {icon: postosSaudeIcon(f)}), onEachFeature: (f,l) => l.bindPopup(createStyledPopupContent(f.properties.Nome||"Unidade de Saúde", f.properties)) }).addTo(mymap);
+                saudeLegend = toggleLegend(saudeLegend, createSaudeLegend, true); 
+            }).catch(e => { document.getElementById('postosSaudeLayerToggle').checked = false; });
+        }
 
-
-        // =======================================================
-        // INICIALIZAÇÃO AUTOMÁTICA
-        // =======================================================
-        document.addEventListener('DOMContentLoaded', function() {
-            try {
-                // Carrega Limites (É o único que deve iniciar ATIVADO)
-                if (document.getElementById('limitesLayerToggle').checked) {
-                    loadLimitesGeoJSON();
-                }
-                
-                // Pré-carrega as camadas para que o toggle funcione rápido
-                loadBairrosGeoJSON(false); 
-                loadSetoresGeoJSON();
-                loadRuidoAeroportoGeoJSON(false); 
-                loadZonaUrbanaGeoJSON(false);     
-                loadAreasDeRiscoGeoJSON(false); 
-                loadPracasGeoJSON(); 
-                loadCrechesGeoJSON(); 
-                loadItinerarioGeoJSON();
-                loadBaciasGeoJSON(); 
-                
-                // NOTA: A camada de Saúde será carregada somente no primeiro clique para evitar erros na inicialização.
-                
-                // CORREÇÃO CRÍTICA PARA O "MAPA BRANCO" 
-                setTimeout(function() {
-                    mymap.invalidateSize();
-                    if (document.getElementById('bairrosLayerToggle').checked) {
-                        toggleBairroLabels(); 
-                    }
-                }, 1000); 
-
-            } catch (error) {
-                console.error("❌ ERRO FATAL NA INICIALIZAÇÃO DO MAPA. NENHUM LAYER FOI CARREGADO.", error);
-                alert("Ocorreu um erro crítico ao iniciar o mapa. Verifique o Console (F12) para detalhes.");
+        // --- CARREGAMENTO DE MERCADOS (SÓ NOME E BAIRRO) ---
+        function loadMercados() {
+            var toggleId = 'mercadosLayerToggle';
+            var isChecked = document.getElementById(toggleId).checked;
+            if (mercadosLayer) {
+                if (isChecked) { mercadosLayer.addTo(mymap); mercadosLegend = toggleLegend(mercadosLegend, createMercadosLegend, true); } 
+                else { mymap.removeLayer(mercadosLayer); mercadosLegend = toggleLegend(mercadosLegend, createMercadosLegend, false); }
+                return;
             }
+            if (!isChecked) return;
+            fetch('data/mercados_feiras_matadouros.geojson').then(response => response.json()).then(data => {
+                mercadosLayer = L.geoJson(data, {
+                    style: mercadosStyle, 
+                    onEachFeature: function(feature, layer) {
+                        var p = feature.properties;
+                        var nome = p.Nome || p.nome || p.NOME || p.Tipo || "Local";
+                        var bairro = p.Bairro || p.bairro || p.BAIRRO || "Não informado";
+                        var popupContent = `<div class="popup-header">${nome}</div><div class="popup-data"><p style="margin-top:10px; font-size:1.1em;"><strong>Bairro:</strong> ${bairro}</p></div>`;
+                        layer.bindPopup(popupContent);
+                    }
+                });
+                mercadosLayer.addTo(mymap);
+                mercadosLegend = toggleLegend(mercadosLegend, createMercadosLegend, true);
+            }).catch(err => { document.getElementById(toggleId).checked = false; });
+        }
+
+        // --- NOVO LOADER: ATERRO SANITÁRIO ---
+        function loadAterro() {
+            var toggleId = 'aterroLayerToggle';
+            var isChecked = document.getElementById(toggleId).checked;
+            if (aterroLayer) {
+                if (isChecked) { aterroLayer.addTo(mymap); aterroLegend = toggleLegend(aterroLegend, createAterroLegend, true); } 
+                else { mymap.removeLayer(aterroLayer); aterroLegend = toggleLegend(aterroLegend, createAterroLegend, false); }
+                return;
+            }
+            if (!isChecked) return;
+            fetch('data/aterro_sanitario.geojson').then(response => response.json()).then(data => {
+                aterroLayer = L.geoJson(data, {
+                    style: aterroStyle, 
+                    pointToLayer: (f,l) => L.marker(l, {icon: aterroIcon()}), // Garante funcionamento se for ponto
+                    onEachFeature: function(feature, layer) {
+                        var p = feature.properties;
+                        var nome = p.Nome || p.nome || "Aterro Sanitário";
+                        var popupContent = `<div class="popup-header">${nome}</div><div class="popup-data"><p>Área de Destinação Final</p></div>`;
+                        layer.bindPopup(popupContent);
+                    }
+                });
+                aterroLayer.addTo(mymap);
+                aterroLegend = toggleLegend(aterroLegend, createAterroLegend, true);
+            }).catch(err => { console.error("Erro Aterro:", err); document.getElementById(toggleId).checked = false; });
+        }
+
+        // =======================================================
+        // 8. EVENT LISTENERS
+        // =======================================================
+        document.getElementById('limitesLayerToggle').addEventListener('change', loadLimites);
+        document.getElementById('bairrosLayerToggle').addEventListener('change', loadBairros);
+        document.getElementById('escolasLayerToggle').addEventListener('change', loadEscolasGeoJSON);
+        document.getElementById('crechesLayerToggle').addEventListener('change', loadCreches); 
+        document.getElementById('postosSaudeLayerToggle').addEventListener('change', loadSaude);
+        document.getElementById('mercadosLayerToggle').addEventListener('change', loadMercados);
+        
+        // NOVO EVENT LISTENER
+        document.getElementById('aterroLayerToggle').addEventListener('change', loadAterro);
+        
+        document.getElementById('setoresLayerToggle').addEventListener('change', () => loadGenericLayer('data/setores.geojson', 'setoresLayerToggle', setoresStyle, (f,l)=>l.bindPopup("Setor"), 'setoresLayer', 'geral'));
+        document.getElementById('ruidoAeroportoLayerToggle').addEventListener('change', () => loadGenericLayer('data/ruido_urbano.geojson', 'ruidoAeroportoLayerToggle', styleRuido, (f,l)=>l.bindPopup("Ruído"), 'ruidoAeroportoLayer', 'geral'));
+        document.getElementById('zonaUrbanaLayerToggle').addEventListener('change', () => loadGenericLayer('data/zona_urbana.geojson', 'zonaUrbanaLayerToggle', styleZonaUrbana, (f,l)=>l.bindPopup("Zona Urbana"), 'zonaUrbanaLayer', 'geral'));
+        document.getElementById('areasDeRiscoLayerToggle').addEventListener('change', () => loadGenericLayer('data/areas_de_risco.geojson', 'areasDeRiscoLayerToggle', styleRisco, (f,l)=>l.bindPopup("Risco"), 'areasDeRiscoLayer', 'geral'));
+
+        document.getElementById('pracasLayerToggle').addEventListener('change', () => loadGenericLayer('data/pracas.geojson', 'pracasLayerToggle', pracasStyle, (f,l)=>l.bindPopup(f.properties.tipo||"Praça", f.properties), 'pracasLayer', createPracasLegend));
+        document.getElementById('itinerarioLayerToggle').addEventListener('change', () => loadGenericLayer('data/itinerario.geojson', 'itinerarioLayerToggle', itinerarioStyle, (f,l)=>l.bindPopup(f.properties.Linha||"Linha", f.properties), 'itinerarioLayer', createItinerarioLegend));
+        document.getElementById('baciasLayerToggle').addEventListener('change', () => loadGenericLayer('data/bacias_hidrograficas.geojson', 'baciasLayerToggle', baciasStyle, (f,l)=>l.bindPopup(f.properties.nome_bacia||"Bacia", f.properties), 'baciasLayer', createBaciasLegend));
+        
+        // =======================================================
+        // 9. STARTUP
+        // =======================================================
+        loadLimites();
+        
+        mymap.on('zoomend', function() {
+            if(bairrosLayer) { if(mymap.getZoom() <= MAX_ZOOM_FOR_LABELS) bairrosLayer.eachLayer(l => l.openTooltip()); else bairrosLayer.eachLayer(l => l.closeTooltip()); }
         });
-            
+
     </script>
 </body>
 </html>
