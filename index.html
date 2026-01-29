@@ -105,12 +105,13 @@
             pointer-events: none;
         }
 
-        .label-style { background: transparent !important; border: none !important; box-shadow: none !important; color: #333; font-weight: 700; font-size: 10px; text-shadow: 1px 1px 0 #fff; text-transform: uppercase; pointer-events: none; }
+        .label-style { background: transparent !important; border: none !important; box-shadow: none !important; color: #333; font-weight: 400; font-size: 8px; text-shadow: 1px 1px 0 #fff; text-transform: uppercase; pointer-events: none; }
         .custom-icon { background: none !important; border: none !important; }
         
         .popup-custom-content { font-family: 'Poppins', sans-serif; min-width: 150px; font-size: 12px; }
         .popup-custom-content h3 { margin: 0 0 5px 0; color: var(--cor-principal); font-size: 1.1em; font-weight: 700; line-height: 1.2; text-transform: uppercase; }
         .popup-custom-content hr { border: 0; border-top: 1px solid var(--cor-borda); margin: 8px 0; }
+        
 
         .sidebar-footer { padding: 20px; font-size: 10px; color: #777; text-align: center; border-top: 1px solid var(--cor-borda); background-color: #fff; line-height: 1.4; }
     </style>
@@ -154,10 +155,10 @@
                 <div class="accordion-content">
                     <div class="layer-item"><span>Unidades de Ensino</span><label class="switch"><input type="checkbox" id="escolasLayerToggle"><span class="slider"></span></label></div>
                     <div class="layer-item"><span>Creches</span><label class="switch"><input type="checkbox" id="crechesLayerToggle"><span class="slider"></span></label></div>
-                    <div class="layer-item"><span>Hospitais / Postos de Saúde</span><label class="switch"><input type="checkbox" id="postosSaudeLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Unidades de Saúde</span><label class="switch"><input type="checkbox" id="postosSaudeLayerToggle"><span class="slider"></span></label></div>
                     <div class="layer-item"><span>Mercados e Feiras</span><label class="switch"><input type="checkbox" id="mercadosLayerToggle"><span class="slider"></span></label></div>
                     <div class="layer-item"><span>Aterro Sanitário</span><label class="switch"><input type="checkbox" id="aterroLayerToggle"><span class="slider"></span></label></div>
-                    <div class="layer-item"><span>Praças e Parques</span><label class="switch"><input type="checkbox" id="pracasLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Praças</span><label class="switch"><input type="checkbox" id="pracasLayerToggle"><span class="slider"></span></label></div>
                 </div>
             </div>
 
@@ -279,9 +280,9 @@
                 'distritosLayerToggle': { label: 'Distritos Rurais', type: 'poly', color: '#5D2E0C', fillColor: '#8B4513' },
                 'setoresLayerToggle': { label: 'Setores Censitários', type: 'poly', color: '#0099cc', fillColor: '#00ccff' },
                 'zonaUrbanaLayerToggle': { label: 'Zona Urbana', type: 'poly', color: '#1b5e20', fillColor: '#4caf50' },
-                'ruidoLayerToggle': { label: 'Ruído Aeroporto', type: 'poly', color: '#ff9900', fillColor: '#ffcc00' },
+                'ruidoLayerToggle': { label: 'Área de ruído', type: 'poly', color: '#ff9900', fillColor: '#ffcc00' },
                 'crechesLayerToggle': { label: 'Creches', type: 'icon', icon: 'fas fa-child', color: '#1abc9c' },
-                'aterroLayerToggle': { label: 'Aterro Sanitário', type: 'poly', color: '#3e2723', fillColor: '#5d4037' },
+                'aterroLayerToggle': { label: 'Aterro Sanitário - Ecoparque João Pessoa', type: 'poly', color: '#3e2723', fillColor: '#5d4037' },
                 'pracasLayerToggle': { label: 'Praças e Parques', type: 'poly', color: '#f1c40f', fillColor: '#feca57' }
             };
 
@@ -299,8 +300,8 @@
                         content.innerHTML += `<div class="legend-item"><div class="legend-line" style="background:#8B4513; height:4px;"></div><span>Elevação 50m (Mestra)</span></div>`;
                     }
                     else if (id === 'postosSaudeLayerToggle') {
-                        content.innerHTML += `<div class="legend-subtitle">HOSPITAIS / SAÚDE:</div>`;
-                        const tipos = [{n:'Hospital', c:'#ff00ff', i:'fas fa-hospital'}, {n:'Centro de Saúde', c:'#ccff00', i:'fas fa-clinic-medical'}, {n:'Serviço de Saúde', c:'#2980b9', i:'fas fa-clinic-medical'}, {n:'Unidade Básica (UBS)', c:'#c0392b', i:'fas fa-map-marker-alt'}, {n:'Secretaria de Saúde', c:'#8e44ad', i:'fas fa-map-marker-alt'}];
+                        content.innerHTML += `<div class="legend-subtitle">Unidades de Saúde:</div>`;
+                        const tipos = [{n:'Hospitais', c:'#ff00ff', i:'fas fa-hospital'}, {n:'Centros de Saúde', c:'#ccff00', i:'fas fa-clinic-medical'}, {n:'Serviços de Saúde', c:'#2980b9', i:'fas fa-clinic-medical'}, {n:'Unidade Básica de Saúde (UBS)', c:'#c0392b', i:'fas fa-map-marker-alt'}, {n:'Secretaria de Saúde', c:'#8e44ad', i:'fas fa-map-marker-alt'}];
                         tipos.forEach(t => { content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border:none; text-align:center;"><i class="${t.i}" style="color:${t.c}"></i></div><span>${t.n}</span></div>`; });
                     }
                     else if (id === 'mercadosLayerToggle') {
@@ -316,7 +317,7 @@
                     }
                     else if (id === 'baciasLayerToggle') {
                         content.innerHTML += `<div class="legend-subtitle">BACIAS HIDROGRÁFICAS:</div>`;
-                        const baciasList = [{n:'Rio Miriri', c:'#5DADE2'}, {n:'Rio Paraíba', c:'#45B39D'}, {n:'Rio Gramame', c:'#1B4F72'}];
+                        const baciasList = [{n:'Bacia do Rio Miriri', c:'#5DADE2'}, {n:'Bacia do Rio Paraíba', c:'#45B39D'}, {n:'Bacia do Rio Gramame', c:'#1B4F72'}];
                         baciasList.forEach(b => { content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border: 1px solid ${b.c}; background: ${b.c}; opacity: 0.6;"></div><span>${b.n}</span></div>`; });
                     }
                     else if (legendConfig[id]) {
