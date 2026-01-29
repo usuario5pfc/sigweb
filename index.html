@@ -101,11 +101,7 @@
             color: #8B4513; 
             font-weight: 300; 
             font-size: 10px;
-            text-shadow: 
-                -1.5px -1.5px 0 #fff,  
-                 1.5px -1.5px 0 #fff,
-                -1.5px  1.5px 0 #fff,
-                 1.5px  1.5px 0 #fff;
+            text-shadow: -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff;
             pointer-events: none;
         }
 
@@ -139,6 +135,7 @@
             <img src="srlogo.png" alt="Logo">
             <button class="close-sidebar-btn" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
         </div>
+
         <div class="accordion-container">
             <div class="accordion-item active">
                 <div class="accordion-title">ARQUIVOS GERAIS <i class="fas fa-chevron-down"></i></div>
@@ -188,12 +185,23 @@
         var mymap = L.map('mapid').setView([-7.1189, -34.9608], 13);
         mymap.zoomControl.setPosition('topright');
 
+        // Camadas Base
         var whiteLayer = L.tileLayer('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEAAQMAAABmvDolAAAAA1BMVEX///+nxBvIAAAAH0lEQVQYGe3BAQ0AAADCIPunfg43YAAAAAAAAAAA5wIhAAAB9aK9BAAAAABJRU5ErkJggg==');
         var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
         var satLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}');
+        var darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        });
+
         whiteLayer.addTo(mymap);
 
-        var baseMaps = { "Fundo Branco": whiteLayer, "Satélite": satLayer, "OpenStreetMap": osmLayer };
+        var baseMaps = { 
+            "Fundo Branco": whiteLayer, 
+            "Fundo Preto": darkLayer,
+            "Satélite": satLayer, 
+            "OpenStreetMap": osmLayer 
+        };
+        
         L.control.layers(baseMaps, {}, {position: 'topright'}).addTo(mymap);
         L.control.polylineMeasure({ position: 'topright', unit: 'kilometres' }).addTo(mymap);
 
@@ -236,17 +244,11 @@
             return '#A9CCE3'; 
         }
 
-        // Função genérica para efeito de Hover em polígonos
         function addHoverEffect(layer, layerId) {
             layer.on('mouseover', function (e) {
                 var l = e.target;
-                l.setStyle({
-                    weight: 4,
-                    fillOpacity: 0.7
-                });
-                if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-                    l.bringToFront();
-                }
+                l.setStyle({ weight: 4, fillOpacity: 0.7 });
+                if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) { l.bringToFront(); }
             });
             layer.on('mouseout', function (e) {
                 activeLayers[layerId].resetStyle(e.target);
@@ -293,7 +295,7 @@
                     }
                     else if (id === 'curvasLayerToggle') {
                         content.innerHTML += `<div class="legend-subtitle">CURVAS DE NÍVEL:</div>`;
-                        content.innerHTML += `<div class="legend-item"><div class="legend-line" style="background:#8B4513; height:1px;"></div><span>Elevação < 50m (Normal)</span></div>`;
+                        content.innerHTML += `<div class="legend-item"><div class="legend-line" style="background:#8B4513; height:1px;"></div><span>Elevação < 50m</span></div>`;
                         content.innerHTML += `<div class="legend-item"><div class="legend-line" style="background:#8B4513; height:4px;"></div><span>Elevação 50m (Mestra)</span></div>`;
                     }
                     else if (id === 'postosSaudeLayerToggle') {
@@ -304,9 +306,7 @@
                     else if (id === 'mercadosLayerToggle') {
                         content.innerHTML += `<div class="legend-subtitle">MERCADOS E FEIRAS:</div>`;
                         const tiposM = [{n:'Mercado', c:'#e67e22'}, {n:'Feira', c:'#27ae60'}, {n:'Abatedouro', c:'#c0392b'}];
-                        tiposM.forEach(t => { 
-                            content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border: 1px solid ${t.c}; background: ${t.c}; opacity: 0.8;"></div><span>${t.n}</span></div>`; 
-                        });
+                        tiposM.forEach(t => { content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border: 1px solid ${t.c}; background: ${t.c}; opacity: 0.8;"></div><span>${t.n}</span></div>`; });
                     }
                     else if (id === 'itinerarioLayerToggle') {
                         content.innerHTML += `<div class="legend-subtitle">ITINERÁRIOS:</div>`;
@@ -316,10 +316,8 @@
                     }
                     else if (id === 'baciasLayerToggle') {
                         content.innerHTML += `<div class="legend-subtitle">BACIAS HIDROGRÁFICAS:</div>`;
-                        const baciasList = [{n:'Bacia do Rio Miriri', c:'#5DADE2'}, {n:'Bacia do Rio Paraíba', c:'#45B39D'}, {n:'Bacia do Rio Gramame', c:'#1B4F72'}];
-                        baciasList.forEach(b => { 
-                            content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border: 1px solid ${b.c}; background: ${b.c}; opacity: 0.6;"></div><span>${b.n}</span></div>`; 
-                        });
+                        const baciasList = [{n:'Rio Miriri', c:'#5DADE2'}, {n:'Rio Paraíba', c:'#45B39D'}, {n:'Rio Gramame', c:'#1B4F72'}];
+                        baciasList.forEach(b => { content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border: 1px solid ${b.c}; background: ${b.c}; opacity: 0.6;"></div><span>${b.n}</span></div>`; });
                     }
                     else if (legendConfig[id]) {
                         const cfg = legendConfig[id];
@@ -345,9 +343,8 @@
                     style: styleFunc,
                     pointToLayer: isPoint ? (f, latlng) => L.marker(latlng, {icon: iconFunc(f)}) : null,
                     onEachFeature: (f, l) => {
-                        if (onEachFunc) {
-                            onEachFunc(f, l);
-                        } else {
+                        if (onEachFunc) { onEachFunc(f, l); } 
+                        else {
                             l.bindPopup(createPopupContent(f.properties, "Nome"));
                             if (id === 'bairrosLayerToggle' && f.properties.NM_BAIRRO) {
                                 l.bindTooltip(f.properties.NM_BAIRRO, { permanent: true, direction: 'center', className: 'label-style' });
@@ -362,72 +359,39 @@
 
         const iconS = (c, i) => L.divIcon({className:'custom-icon', html:`<i class="${i}" style="color:${c}; font-size:18px; text-shadow: 1px 1px 1px #fff;"></i>`});
 
-        // Configuração das camadas com os novos efeitos de hover
+        // Eventos dos Toggles
         document.getElementById('limitesLayerToggle').onclick = () => loadGeneric('limitesLayerToggle', 'data/Limite_municipal.geojson', ()=>({color:'red', weight:2, fill:false}));
-        
-        document.getElementById('bairrosLayerToggle').onclick = () => loadGeneric(
-            'bairrosLayerToggle', 
-            'data/Bairros.geojson', 
-            ()=>({color:'#e67e22', fillColor:'#f39c12', weight:2, fillOpacity:0.4}),
-            (f, l) => {
-                l.bindPopup(createPopupContent(f.properties, "NM_BAIRRO"));
-                if (f.properties.NM_BAIRRO) l.bindTooltip(f.properties.NM_BAIRRO, { permanent: true, direction: 'center', className: 'label-style' });
-                addHoverEffect(l, 'bairrosLayerToggle');
-            }
-        );
-
-        document.getElementById('distritosLayerToggle').onclick = () => loadGeneric(
-            'distritosLayerToggle', 
-            'data/distritos_rurais.geojson', 
-            ()=>({color:'#5D2E0C', fillColor:'#8B4513', weight:2, fillOpacity:0.2}),
-            (f, l) => {
-                l.bindPopup(createPopupContent(f.properties, "nome"));
-                addHoverEffect(l, 'distritosLayerToggle');
-            }
-        );
-
-        document.getElementById('setoresLayerToggle').onclick = () => loadGeneric(
-            'setoresLayerToggle', 
-            'data/setores.geojson', 
-            ()=>({color:'#0099cc', fillColor:'#00ccff', weight:1, fillOpacity:0.15}),
-            (f, l) => {
-                l.bindPopup(createPopupContent(f.properties, "CD_SETOR"));
-                addHoverEffect(l, 'setoresLayerToggle');
-            }
-        );
-
-        document.getElementById('zonaUrbanaLayerToggle').onclick = () => loadGeneric(
-            'zonaUrbanaLayerToggle', 
-            'data/zona_urbana.geojson', 
-            ()=>({color:'#1b5e20', fillColor:'#4caf50', weight:1, fillOpacity:0.1}),
-            (f, l) => {
-                l.bindPopup(createPopupContent(f.properties, "nome"));
-                addHoverEffect(l, 'zonaUrbanaLayerToggle');
-            }
-        );
-
+        document.getElementById('bairrosLayerToggle').onclick = () => loadGeneric('bairrosLayerToggle', 'data/Bairros.geojson', ()=>({color:'#e67e22', fillColor:'#f39c12', weight:2, fillOpacity:0.4}), (f, l) => {
+            l.bindPopup(createPopupContent(f.properties, "NM_BAIRRO"));
+            if (f.properties.NM_BAIRRO) l.bindTooltip(f.properties.NM_BAIRRO, { permanent: true, direction: 'center', className: 'label-style' });
+            addHoverEffect(l, 'bairrosLayerToggle');
+        });
+        document.getElementById('distritosLayerToggle').onclick = () => loadGeneric('distritosLayerToggle', 'data/distritos_rurais.geojson', ()=>({color:'#5D2E0C', fillColor:'#8B4513', weight:2, fillOpacity:0.2}), (f, l) => {
+            l.bindPopup(createPopupContent(f.properties, "nome"));
+            addHoverEffect(l, 'distritosLayerToggle');
+        });
+        document.getElementById('setoresLayerToggle').onclick = () => loadGeneric('setoresLayerToggle', 'data/setores.geojson', ()=>({color:'#0099cc', fillColor:'#00ccff', weight:1, fillOpacity:0.15}), (f, l) => {
+            l.bindPopup(createPopupContent(f.properties, "CD_SETOR"));
+            addHoverEffect(l, 'setoresLayerToggle');
+        });
+        document.getElementById('zonaUrbanaLayerToggle').onclick = () => loadGeneric('zonaUrbanaLayerToggle', 'data/zona_urbana.geojson', ()=>({color:'#1b5e20', fillColor:'#4caf50', weight:1, fillOpacity:0.1}), (f, l) => {
+            l.bindPopup(createPopupContent(f.properties, "nome"));
+            addHoverEffect(l, 'zonaUrbanaLayerToggle');
+        });
         document.getElementById('ruidoLayerToggle').onclick = () => loadGeneric('ruidoLayerToggle', 'data/ruido_urbano.geojson', ()=>({color:'#ff9900', fillColor:'#ffcc00', weight:2, fillOpacity:0.3}));
         document.getElementById('pracasLayerToggle').onclick = () => loadGeneric('pracasLayerToggle', 'data/pracas.geojson', ()=>({color:'#f1c40f', fillColor:'#feca57', weight:2, fillOpacity:0.6}));
         document.getElementById('aterroLayerToggle').onclick = () => loadGeneric('aterroLayerToggle', 'data/aterro_sanitario.geojson', ()=>({color:'#3e2723', fillColor:'#5d4037', weight:2, fillOpacity:0.5}));
-        
-        document.getElementById('curvasLayerToggle').onclick = () => loadGeneric(
-            'curvasLayerToggle', 
-            'data/curvas.geojson', 
-            (f) => {
-                const isMestra = f.properties && f.properties.ELEV && f.properties.ELEV % 50 === 0;
-                return { color: '#8B4513', weight: isMestra ? 1.8 : 0.6, opacity: isMestra ? 0.9 : 0.5 };
-            },
-            (f, l) => {
-                if (f.properties && f.properties.ELEV && f.properties.ELEV % 50 === 0) {
-                    l.bindTooltip(f.properties.ELEV.toString(), { permanent: true, direction: 'center', className: 'label-curvas' });
-                }
-                l.bindPopup(createPopupContent(f.properties, "ELEV"));
+        document.getElementById('curvasLayerToggle').onclick = () => loadGeneric('curvasLayerToggle', 'data/curvas.geojson', (f) => {
+            const isMestra = f.properties && f.properties.ELEV && f.properties.ELEV % 50 === 0;
+            return { color: '#8B4513', weight: isMestra ? 1.8 : 0.6, opacity: isMestra ? 0.9 : 0.5 };
+        }, (f, l) => {
+            if (f.properties && f.properties.ELEV && f.properties.ELEV % 50 === 0) {
+                l.bindTooltip(f.properties.ELEV.toString(), { permanent: true, direction: 'center', className: 'label-curvas' });
             }
-        );
-
+            l.bindPopup(createPopupContent(f.properties, "ELEV"));
+        });
         document.getElementById('itinerarioLayerToggle').onclick = () => loadGeneric('itinerarioLayerToggle', 'data/itinerario.geojson', (f)=>({color: (f.properties.cor || 'green'), weight: 3}));
         document.getElementById('escolasLayerToggle').onclick = () => loadGeneric('escolasLayerToggle', 'data/escolas.geojson', null, null, true, (f) => iconS(getEscolaColor(f.properties['Dependênc']), 'fas fa-map-marker-alt'));
-
         document.getElementById('postosSaudeLayerToggle').onclick = () => loadGeneric('postosSaudeLayerToggle', 'data/saude_santarita.geojson', null, null, true, (f) => {
             const val = (f.properties['TIPO'] || f.properties['tipo'] || '').toUpperCase().trim();
             let icone = 'fas fa-map-marker-alt'; 
@@ -435,9 +399,7 @@
             else if (val === 'SERVIÇO' || val === 'SERVICO' || val.includes('CENTRO')) icone = 'fas fa-clinic-medical';
             return iconS(getSaudeColor(val), icone);
         });
-
         document.getElementById('crechesLayerToggle').onclick = () => loadGeneric('crechesLayerToggle', 'data/creches.geojson', null, null, true, ()=>iconS('#1abc9c','fas fa-child'));
-
         document.getElementById('mercadosLayerToggle').onclick = () => loadGeneric('mercadosLayerToggle', 'data/mercados_feiras_matadouros.geojson', null, null, true, (f) => {
             const tipoVal = (f.properties['Tipo'] || f.properties['tipo'] || '').toUpperCase().trim();
             const corPonto = getMercadoColor(tipoVal);
@@ -447,20 +409,16 @@
             else if (tipoVal.includes('ABATEDOURO')) iconePonto = 'fas fa-khanda';
             return iconS(corPonto, iconePonto);
         });
+        document.getElementById('baciasLayerToggle').onclick = () => loadGeneric('baciasLayerToggle', 'data/bacias_hidrograficas.geojson', (f) => ({ color: getBaciaColor(f.properties.nome_bacia), fillColor: getBaciaColor(f.properties.nome_bacia), weight: 1.5, fillOpacity: 0.3 }), (f, l) => {
+            l.bindPopup(createPopupContent(f.properties, "nome_bacia"));
+            addHoverEffect(l, 'baciasLayerToggle');
+        });
 
-        document.getElementById('baciasLayerToggle').onclick = () => loadGeneric(
-            'baciasLayerToggle', 
-            'data/bacias_hidrograficas.geojson', 
-            (f) => ({ color: getBaciaColor(f.properties.nome_bacia), fillColor: getBaciaColor(f.properties.nome_bacia), weight: 1.5, fillOpacity: 0.3 }),
-            (f, l) => {
-                l.bindPopup(createPopupContent(f.properties, "nome_bacia"));
-                addHoverEffect(l, 'baciasLayerToggle');
-            }
-        );
-
+        // UI Handlers
         document.querySelectorAll('.accordion-title').forEach(t => t.onclick = () => t.parentElement.classList.toggle('active'));
         document.getElementById('sidebarToggleBtn').onclick = () => document.getElementById('sidebarMenu').classList.add('active');
         document.getElementById('closeSidebarBtn').onclick = () => document.getElementById('sidebarMenu').classList.remove('active');
+
         document.getElementById('limitesLayerToggle').click();
     </script>
 </body>
