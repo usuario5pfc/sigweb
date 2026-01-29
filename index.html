@@ -73,7 +73,6 @@
         .sidebar-header { padding: 20px; background-color: var(--cor-principal); color: white; display: flex; align-items: center; justify-content: space-between; }
         .sidebar-header img { max-height: 45px; }
         
-        /* BOTÃO X DISCRETO */
         .close-sidebar-btn { 
             background: none; border: none; color: rgba(255,255,255,0.7); 
             font-size: 1.1em; cursor: pointer; transition: 0.3s;
@@ -95,13 +94,29 @@
         input:checked + .slider { background-color: var(--cor-principal); }
         input:checked + .slider:before { transform: translateX(16px); }
 
-        .label-style { font-weight: 700; font-size: 10px; color: #333; text-shadow: 1px 1px 0 #fff; pointer-events: none; text-transform: uppercase; }
+        .label-curvas {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: #8B4513; 
+            font-weight: 300; 
+            font-size: 10px;
+            text-shadow: 
+                -1.5px -1.5px 0 #fff,  
+                 1.5px -1.5px 0 #fff,
+                -1.5px  1.5px 0 #fff,
+                 1.5px  1.5px 0 #fff;
+            pointer-events: none;
+        }
+
+        .label-style { background: transparent !important; border: none !important; box-shadow: none !important; color: #333; font-weight: 700; font-size: 10px; text-shadow: 1px 1px 0 #fff; text-transform: uppercase; pointer-events: none; }
         .custom-icon { background: none !important; border: none !important; }
         
-        .popup-custom-content { font-family: 'Poppins', sans-serif; min-width: 180px; }
-        .popup-custom-content h3 { margin: 0 0 5px 0; color: var(--cor-principal); font-size: 1.1em; font-weight: 700; line-height: 1.2; }
+        .popup-custom-content { font-family: 'Poppins', sans-serif; min-width: 150px; font-size: 12px; }
+        .popup-custom-content h3 { margin: 0 0 5px 0; color: var(--cor-principal); font-size: 1.1em; font-weight: 700; line-height: 1.2; text-transform: uppercase; }
         .popup-custom-content hr { border: 0; border-top: 1px solid var(--cor-borda); margin: 8px 0; }
-        .popup-custom-content b { color: var(--cor-texto-escuro); font-weight: 600; }
+
+        .sidebar-footer { padding: 20px; font-size: 10px; color: #777; text-align: center; border-top: 1px solid var(--cor-borda); background-color: #fff; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -136,23 +151,26 @@
                     <div class="layer-item"><span>Ruído do Aeroporto</span><label class="switch"><input type="checkbox" id="ruidoLayerToggle"><span class="slider"></span></label></div>
                 </div>
             </div>
+
             <div class="accordion-item">
                 <div class="accordion-title">EQUIPAMENTOS MUNICIPAIS <i class="fas fa-chevron-down"></i></div>
                 <div class="accordion-content">
                     <div class="layer-item"><span>Unidades de Ensino</span><label class="switch"><input type="checkbox" id="escolasLayerToggle"><span class="slider"></span></label></div>
                     <div class="layer-item"><span>Creches</span><label class="switch"><input type="checkbox" id="crechesLayerToggle"><span class="slider"></span></label></div>
-                    <div class="layer-item"><span>Postos de Saúde</span><label class="switch"><input type="checkbox" id="postosSaudeLayerToggle"><span class="slider"></span></label></div>
+                    <div class="layer-item"><span>Hospitais / Postos de Saúde</span><label class="switch"><input type="checkbox" id="postosSaudeLayerToggle"><span class="slider"></span></label></div>
                     <div class="layer-item"><span>Mercados e Feiras</span><label class="switch"><input type="checkbox" id="mercadosLayerToggle"><span class="slider"></span></label></div>
                     <div class="layer-item"><span>Aterro Sanitário</span><label class="switch"><input type="checkbox" id="aterroLayerToggle"><span class="slider"></span></label></div>
                     <div class="layer-item"><span>Praças e Parques</span><label class="switch"><input type="checkbox" id="pracasLayerToggle"><span class="slider"></span></label></div>
                 </div>
             </div>
+
             <div class="accordion-item">
                 <div class="accordion-title">MOBILIDADE URBANA <i class="fas fa-chevron-down"></i></div>
                 <div class="accordion-content">
                     <div class="layer-item"><span>Itinerário</span><label class="switch"><input type="checkbox" id="itinerarioLayerToggle"><span class="slider"></span></label></div>
                 </div>
             </div>
+
             <div class="accordion-item">
                 <div class="accordion-title">RECURSOS NATURAIS <i class="fas fa-chevron-down"></i></div>
                 <div class="accordion-content">
@@ -161,6 +179,7 @@
                 </div>
             </div>
         </div>
+        <div class="sidebar-footer">Este SIGWeb foi desenvolvido por Arthur Aquino Tomaz, concluinte do curso de Tecnologia em Geoprocessamento do Instituto Federal da Paraíba (IFPB) – Campus João Pessoa.</div>
     </div>
 
     <div id="mapid"></div>
@@ -177,28 +196,74 @@
         var baseMaps = { "Fundo Branco": whiteLayer, "Satélite": satLayer, "OpenStreetMap": osmLayer };
         L.control.layers(baseMaps, {}, {position: 'topright'}).addTo(mymap);
         L.control.polylineMeasure({ position: 'topright', unit: 'kilometres' }).addTo(mymap);
-        L.control.scale({ position: 'bottomright', imperial: false }).addTo(mymap);
 
         var activeLayers = {};
-        var selectedEntity = null;
 
-        const legendConfig = {
-            'limitesLayerToggle': { label: 'Limite Municipal', type: 'line' },
-            'bairrosLayerToggle': { label: 'Bairros de Santa Rita-PB', type: 'poly' },
-            'distritosLayerToggle': { label: 'Distritos Rurais', type: 'poly' },
-            'setoresLayerToggle': { label: 'Setores Censitários', type: 'poly' },
-            'zonaUrbanaLayerToggle': { label: 'Zona Urbana', type: 'poly' },
-            'ruidoLayerToggle': { label: 'Ruído Aeroporto', type: 'line' },
-            'escolasLayerToggle': { label: 'Unidades de Ensino', type: 'icon', icon: 'fas fa-school', color: '#0076a5' },
-            'crechesLayerToggle': { label: 'Creches', type: 'icon', icon: 'fas fa-child', color: '#1abc9c' },
-            'postosSaudeLayerToggle': { label: 'Postos de Saúde', type: 'icon', icon: 'fas fa-hospital-user', color: '#e74c3c' },
-            'mercadosLayerToggle': { label: 'Mercados/Feiras', type: 'icon', icon: 'fas fa-shopping-basket', color: '#f39c12' },
-            'aterroLayerToggle': { label: 'Aterro Sanitário', type: 'poly' },
-            'pracasLayerToggle': { label: 'Praças e Parques', type: 'poly' },
-            'itinerarioLayerToggle': { label: 'Itinerários', type: 'line', isDynamic: true },
-            'curvasLayerToggle': { label: 'Curvas de Nível', type: 'line' },
-            'baciasLayerToggle': { label: 'Bacias Hidrográficas', type: 'poly', isDynamic: true }
-        };
+        // Funções de Estilo e Cores
+        function getEscolaColor(dep) {
+            const d = (dep || '').toUpperCase().trim();
+            if (d.includes('MUNICIPAL')) return '#0076a5';
+            if (d.includes('ESTADUAL')) return '#e74c3c';
+            if (d.includes('FEDERAL')) return '#2ecc71';
+            if (d.includes('PRIVADA')) return '#f39c12';
+            if (d.includes('FILANTROPICA')) return '#9b59b6';
+            return '#7f8c8d';
+        }
+
+        function getSaudeColor(tipo) {
+            const t = (tipo || '').toUpperCase().trim();
+            if (t === 'HOSPITAL') return '#ff00ff'; 
+            if (t.includes('CENTRO')) return '#ccff00'; 
+            if (t === 'SERVIÇO' || t === 'SERVICO') return '#2980b9'; 
+            if (t === 'UBS') return '#c0392b'; 
+            if (t === 'SECRETARIA') return '#8e44ad'; 
+            return '#e74c3c'; 
+        }
+
+        function getMercadoColor(tipo) {
+            const t = (tipo || '').toUpperCase().trim();
+            if (t.includes('MERCADO')) return '#e67e22';    
+            if (t.includes('FEIRA')) return '#27ae60';      
+            if (t.includes('ABATEDOURO')) return '#c0392b'; 
+            return '#f39c12'; 
+        }
+
+        function getBaciaColor(name) {
+            let n = (name||'').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            if (n.includes('miriri')) return '#5DADE2'; 
+            if (n.includes('paraiba')) return '#45B39D'; 
+            if (n.includes('gramame')) return '#1B4F72'; 
+            return '#A9CCE3'; 
+        }
+
+        // Função genérica para efeito de Hover em polígonos
+        function addHoverEffect(layer, layerId) {
+            layer.on('mouseover', function (e) {
+                var l = e.target;
+                l.setStyle({
+                    weight: 4,
+                    fillOpacity: 0.7
+                });
+                if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                    l.bringToFront();
+                }
+            });
+            layer.on('mouseout', function (e) {
+                activeLayers[layerId].resetStyle(e.target);
+            });
+        }
+
+        function createPopupContent(props, titleField) {
+            let title = props[titleField] || "Informação";
+            let html = `<div class="popup-custom-content"><h3>${title}</h3><hr>`;
+            for (let key in props) {
+                if (key !== titleField && typeof props[key] !== 'object') {
+                    html += `<b>${key}:</b> ${props[key]}<br>`;
+                }
+            }
+            html += `</div>`;
+            return html;
+        }
 
         function updateLegend() {
             const container = document.getElementById('legendContainer');
@@ -206,101 +271,71 @@
             content.innerHTML = '';
             let hasVisible = false;
 
+            const legendConfig = {
+                'limitesLayerToggle': { label: 'Limite Municipal', type: 'line', color: 'red' },
+                'bairrosLayerToggle': { label: 'Bairros', type: 'poly', color: '#e67e22', fillColor: '#f39c12' },
+                'distritosLayerToggle': { label: 'Distritos Rurais', type: 'poly', color: '#5D2E0C', fillColor: '#8B4513' },
+                'setoresLayerToggle': { label: 'Setores Censitários', type: 'poly', color: '#0099cc', fillColor: '#00ccff' },
+                'zonaUrbanaLayerToggle': { label: 'Zona Urbana', type: 'poly', color: '#1b5e20', fillColor: '#4caf50' },
+                'ruidoLayerToggle': { label: 'Ruído Aeroporto', type: 'poly', color: '#ff9900', fillColor: '#ffcc00' },
+                'crechesLayerToggle': { label: 'Creches', type: 'icon', icon: 'fas fa-child', color: '#1abc9c' },
+                'aterroLayerToggle': { label: 'Aterro Sanitário', type: 'poly', color: '#3e2723', fillColor: '#5d4037' },
+                'pracasLayerToggle': { label: 'Praças e Parques', type: 'poly', color: '#f1c40f', fillColor: '#feca57' }
+            };
+
             Object.keys(activeLayers).forEach(id => {
                 if (mymap.hasLayer(activeLayers[id])) {
                     hasVisible = true;
-                    const cfg = legendConfig[id];
-                    let sample = null;
-                    activeLayers[id].eachLayer(l => { if(!sample) sample = l; });
-                    let style = sample?.options || {};
-
-                    if (id === 'itinerarioLayerToggle') {
+                    if (id === 'escolasLayerToggle') {
+                        content.innerHTML += `<div class="legend-subtitle">UNIDADES DE ENSINO:</div>`;
+                        const cats = [{n:'Municipal', c:'#0076a5'}, {n:'Estadual', c:'#e74c3c'}, {n:'Federal', c:'#2ecc71'}, {n:'Privada', c:'#f39c12'}, {n:'Filantrópica', c:'#9b59b6'}];
+                        cats.forEach(cat => { content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border:none; text-align:center;"><i class="fas fa-map-marker-alt" style="color:${cat.c}"></i></div><span>${cat.n}</span></div>`; });
+                    }
+                    else if (id === 'curvasLayerToggle') {
+                        content.innerHTML += `<div class="legend-subtitle">CURVAS DE NÍVEL:</div>`;
+                        content.innerHTML += `<div class="legend-item"><div class="legend-line" style="background:#8B4513; height:1px;"></div><span>Elevação < 50m (Normal)</span></div>`;
+                        content.innerHTML += `<div class="legend-item"><div class="legend-line" style="background:#8B4513; height:4px;"></div><span>Elevação 50m (Mestra)</span></div>`;
+                    }
+                    else if (id === 'postosSaudeLayerToggle') {
+                        content.innerHTML += `<div class="legend-subtitle">HOSPITAIS / SAÚDE:</div>`;
+                        const tipos = [{n:'Hospital', c:'#ff00ff', i:'fas fa-hospital'}, {n:'Centro de Saúde', c:'#ccff00', i:'fas fa-clinic-medical'}, {n:'Serviço de Saúde', c:'#2980b9', i:'fas fa-clinic-medical'}, {n:'Unidade Básica (UBS)', c:'#c0392b', i:'fas fa-map-marker-alt'}, {n:'Secretaria de Saúde', c:'#8e44ad', i:'fas fa-map-marker-alt'}];
+                        tipos.forEach(t => { content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border:none; text-align:center;"><i class="${t.i}" style="color:${t.c}"></i></div><span>${t.n}</span></div>`; });
+                    }
+                    else if (id === 'mercadosLayerToggle') {
+                        content.innerHTML += `<div class="legend-subtitle">MERCADOS E FEIRAS:</div>`;
+                        const tiposM = [{n:'Mercado', c:'#e67e22'}, {n:'Feira', c:'#27ae60'}, {n:'Abatedouro', c:'#c0392b'}];
+                        tiposM.forEach(t => { 
+                            content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border: 1px solid ${t.c}; background: ${t.c}; opacity: 0.8;"></div><span>${t.n}</span></div>`; 
+                        });
+                    }
+                    else if (id === 'itinerarioLayerToggle') {
                         content.innerHTML += `<div class="legend-subtitle">ITINERÁRIOS:</div>`;
                         let unique = new Map();
-                        activeLayers[id].eachLayer(l => {
-                            if (l.feature?.properties) {
-                                let t = l.feature.properties.Linha || 'Não identificado';
-                                let c = l.options.color || 'green';
-                                if(!unique.has(t)) unique.set(t, c);
-                            }
-                        });
-                        Array.from(unique.keys()).sort().forEach(n => {
-                            content.innerHTML += `<div class="legend-item"><div class="legend-line" style="background:${unique.get(n)}"></div><span>${n}</span></div>`;
-                        });
-                    } 
+                        activeLayers[id].eachLayer(l => { if (l.feature?.properties) { let n = l.feature.properties.Linha || 'N/A'; let c = l.options.color; if (!unique.has(n)) unique.set(n, c); } });
+                        Array.from(unique.keys()).sort().forEach(n => { content.innerHTML += `<div class="legend-item"><div class="legend-line" style="background:${unique.get(n)}"></div><span>${n}</span></div>`; });
+                    }
                     else if (id === 'baciasLayerToggle') {
-                        const bacias = [{n:'Bacia do Miriri', c:'#3498db'},{n:'Bacia do Paraíba', c:'#FF69B4'},{n:'Bacia do Gramame', c:'#8A2BE2'}];
-                        content.innerHTML += `<div class="legend-subtitle">BACIAS:</div>`;
-                        bacias.forEach(b => {
-                            content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="background:${b.c}; opacity:0.6; border:1px solid ${b.c}"></div><span>${b.n}</span></div>`;
+                        content.innerHTML += `<div class="legend-subtitle">BACIAS HIDROGRÁFICAS:</div>`;
+                        const baciasList = [{n:'Bacia do Rio Miriri', c:'#5DADE2'}, {n:'Bacia do Rio Paraíba', c:'#45B39D'}, {n:'Bacia do Rio Gramame', c:'#1B4F72'}];
+                        baciasList.forEach(b => { 
+                            content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border: 1px solid ${b.c}; background: ${b.c}; opacity: 0.6;"></div><span>${b.n}</span></div>`; 
                         });
                     }
-                    else if (cfg.type === 'poly') {
-                        let fill = style.fillColor || style.color || 'gray';
-                        let border = style.color || 'black';
-                        let op = style.fillOpacity || 0.3;
-                        content.innerHTML += `
-                            <div class="legend-item">
-                                <div class="legend-symbol" style="background:${fill}; border: 2px solid ${border}; opacity: 1;">
-                                    <div style="width:100%; height:100%; background:${fill}; opacity:${op}"></div>
-                                </div>
-                                <span>${cfg.label}</span>
-                            </div>`;
-                    }
-                    else if (cfg.type === 'line') {
-                        let color = style.color || 'black';
-                        content.innerHTML += `
-                            <div class="legend-item">
-                                <div class="legend-line" style="background:${color}; border-top: ${style.dashArray ? '2px dashed #333' : 'none'}"></div>
-                                <span>${cfg.label}</span>
-                            </div>`;
-                    }
-                    else if (cfg.type === 'icon') {
-                        content.innerHTML += `
-                            <div class="legend-item">
-                                <div class="legend-symbol" style="border:none; display:flex; align-items:center; justify-content:center;">
-                                    <i class="${cfg.icon}" style="color:${cfg.color}"></i>
-                                </div>
-                                <span>${cfg.label}</span>
-                            </div>`;
+                    else if (legendConfig[id]) {
+                        const cfg = legendConfig[id];
+                        if (cfg.type === 'poly') content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border: 2px solid ${cfg.color}; background: ${cfg.fillColor}; opacity: 0.6;"></div><span>${cfg.label}</span></div>`;
+                        else if (cfg.type === 'line') content.innerHTML += `<div class="legend-item"><div class="legend-line" style="background:${cfg.color}"></div><span>${cfg.label}</span></div>`;
+                        else if (cfg.type === 'icon') content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border:none; text-align:center;"><i class="${cfg.icon}" style="color:${cfg.color}"></i></div><span>${cfg.label}</span></div>`;
                     }
                 }
             });
             container.style.display = hasVisible ? 'block' : 'none';
         }
 
-        function applyHighlight(layer, color) {
-            resetAllSelected();
-            selectedEntity = layer;
-            if(layer.setStyle) layer.setStyle({ weight: 6, color: color });
-            if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) layer.bringToFront();
-        }
-
-        function resetAllSelected() {
-            if (selectedEntity) {
-                Object.keys(activeLayers).forEach(id => { if (activeLayers[id].resetStyle) activeLayers[id].resetStyle(selectedEntity); });
-                selectedEntity = null;
-            }
-        }
-
-        mymap.on('click', resetAllSelected);
-
-        function getBaciaColor(name) {
-            let n = (name||'').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-            if (n.includes('miriri')) return '#3498db'; 
-            if (n.includes('paraiba')) return '#FF69B4'; 
-            if (n.includes('gramame')) return '#8A2BE2'; 
-            return '#3498db';
-        }
-
-        // Função loadGeneric original com Zoom Automático na Escala adicionado
         function loadGeneric(id, path, styleFunc, onEachFunc, isPoint, iconFunc) {
             let check = document.getElementById(id).checked;
             if (activeLayers[id]) {
-                if (check) { 
-                    activeLayers[id].addTo(mymap);
-                    if (activeLayers[id].getBounds) mymap.fitBounds(activeLayers[id].getBounds()); // Zoom automático na escala
-                }
+                if (check) { activeLayers[id].addTo(mymap); } 
                 else { mymap.removeLayer(activeLayers[id]); }
                 updateLegend(); return;
             }
@@ -309,40 +344,123 @@
                 activeLayers[id] = L.geoJson(data, {
                     style: styleFunc,
                     pointToLayer: isPoint ? (f, latlng) => L.marker(latlng, {icon: iconFunc(f)}) : null,
-                    onEachFeature: onEachFunc
+                    onEachFeature: (f, l) => {
+                        if (onEachFunc) {
+                            onEachFunc(f, l);
+                        } else {
+                            l.bindPopup(createPopupContent(f.properties, "Nome"));
+                            if (id === 'bairrosLayerToggle' && f.properties.NM_BAIRRO) {
+                                l.bindTooltip(f.properties.NM_BAIRRO, { permanent: true, direction: 'center', className: 'label-style' });
+                            }
+                        }
+                    }
                 }).addTo(mymap);
-                if (activeLayers[id].getBounds) mymap.fitBounds(activeLayers[id].getBounds()); // Zoom automático na escala
+                if (activeLayers[id].getBounds && activeLayers[id].getLayers().length > 0) mymap.fitBounds(activeLayers[id].getBounds());
                 updateLegend();
             });
         }
 
         const iconS = (c, i) => L.divIcon({className:'custom-icon', html:`<i class="${i}" style="color:${c}; font-size:18px; text-shadow: 1px 1px 1px #fff;"></i>`});
 
+        // Configuração das camadas com os novos efeitos de hover
         document.getElementById('limitesLayerToggle').onclick = () => loadGeneric('limitesLayerToggle', 'data/Limite_municipal.geojson', ()=>({color:'red', weight:2, fill:false}));
-        document.getElementById('bairrosLayerToggle').onclick = () => loadGeneric('bairrosLayerToggle', 'data/Bairros.geojson', ()=>({color:'#e67e22', fillColor:'#f39c12', weight:2, fillOpacity:0.4}), (f,l)=>{
-            l.bindTooltip(f.properties.NM_BAIRRO, {sticky:true, className:'label-style'});
-            l.on('click', (e) => { L.DomEvent.stopPropagation(e); applyHighlight(l, '#d35400'); });
-        });
-        document.getElementById('distritosLayerToggle').onclick = () => loadGeneric('distritosLayerToggle', 'data/distritos_rurais.geojson', ()=>({color:'#5D2E0C', fillColor:'#8B4513', weight:2, fillOpacity:0.2}));
-        document.getElementById('setoresLayerToggle').onclick = () => loadGeneric('setoresLayerToggle', 'data/setores.geojson', ()=>({color:'#0099cc', fillColor:'#00ccff', weight:1, fillOpacity:0.15}));
-        document.getElementById('zonaUrbanaLayerToggle').onclick = () => loadGeneric('zonaUrbanaLayerToggle', 'data/zona_urbana.geojson', ()=>({color:'#1b5e20', fillColor:'#4caf50', weight:1, fillOpacity:0.1}));
-        document.getElementById('ruidoLayerToggle').onclick = () => loadGeneric('ruidoLayerToggle', 'data/ruido_urbano.geojson', ()=>({color:'#ff4500', weight:2, dashArray:'5,5', fill:false}));
+        
+        document.getElementById('bairrosLayerToggle').onclick = () => loadGeneric(
+            'bairrosLayerToggle', 
+            'data/Bairros.geojson', 
+            ()=>({color:'#e67e22', fillColor:'#f39c12', weight:2, fillOpacity:0.4}),
+            (f, l) => {
+                l.bindPopup(createPopupContent(f.properties, "NM_BAIRRO"));
+                if (f.properties.NM_BAIRRO) l.bindTooltip(f.properties.NM_BAIRRO, { permanent: true, direction: 'center', className: 'label-style' });
+                addHoverEffect(l, 'bairrosLayerToggle');
+            }
+        );
+
+        document.getElementById('distritosLayerToggle').onclick = () => loadGeneric(
+            'distritosLayerToggle', 
+            'data/distritos_rurais.geojson', 
+            ()=>({color:'#5D2E0C', fillColor:'#8B4513', weight:2, fillOpacity:0.2}),
+            (f, l) => {
+                l.bindPopup(createPopupContent(f.properties, "nome"));
+                addHoverEffect(l, 'distritosLayerToggle');
+            }
+        );
+
+        document.getElementById('setoresLayerToggle').onclick = () => loadGeneric(
+            'setoresLayerToggle', 
+            'data/setores.geojson', 
+            ()=>({color:'#0099cc', fillColor:'#00ccff', weight:1, fillOpacity:0.15}),
+            (f, l) => {
+                l.bindPopup(createPopupContent(f.properties, "CD_SETOR"));
+                addHoverEffect(l, 'setoresLayerToggle');
+            }
+        );
+
+        document.getElementById('zonaUrbanaLayerToggle').onclick = () => loadGeneric(
+            'zonaUrbanaLayerToggle', 
+            'data/zona_urbana.geojson', 
+            ()=>({color:'#1b5e20', fillColor:'#4caf50', weight:1, fillOpacity:0.1}),
+            (f, l) => {
+                l.bindPopup(createPopupContent(f.properties, "nome"));
+                addHoverEffect(l, 'zonaUrbanaLayerToggle');
+            }
+        );
+
+        document.getElementById('ruidoLayerToggle').onclick = () => loadGeneric('ruidoLayerToggle', 'data/ruido_urbano.geojson', ()=>({color:'#ff9900', fillColor:'#ffcc00', weight:2, fillOpacity:0.3}));
         document.getElementById('pracasLayerToggle').onclick = () => loadGeneric('pracasLayerToggle', 'data/pracas.geojson', ()=>({color:'#f1c40f', fillColor:'#feca57', weight:2, fillOpacity:0.6}));
         document.getElementById('aterroLayerToggle').onclick = () => loadGeneric('aterroLayerToggle', 'data/aterro_sanitario.geojson', ()=>({color:'#3e2723', fillColor:'#5d4037', weight:2, fillOpacity:0.5}));
-        document.getElementById('curvasLayerToggle').onclick = () => loadGeneric('curvasLayerToggle', 'data/curvas.geojson', ()=>({color:'#8B4513', weight:0.5}));
+        
+        document.getElementById('curvasLayerToggle').onclick = () => loadGeneric(
+            'curvasLayerToggle', 
+            'data/curvas.geojson', 
+            (f) => {
+                const isMestra = f.properties && f.properties.ELEV && f.properties.ELEV % 50 === 0;
+                return { color: '#8B4513', weight: isMestra ? 1.8 : 0.6, opacity: isMestra ? 0.9 : 0.5 };
+            },
+            (f, l) => {
+                if (f.properties && f.properties.ELEV && f.properties.ELEV % 50 === 0) {
+                    l.bindTooltip(f.properties.ELEV.toString(), { permanent: true, direction: 'center', className: 'label-curvas' });
+                }
+                l.bindPopup(createPopupContent(f.properties, "ELEV"));
+            }
+        );
+
         document.getElementById('itinerarioLayerToggle').onclick = () => loadGeneric('itinerarioLayerToggle', 'data/itinerario.geojson', (f)=>({color: (f.properties.cor || 'green'), weight: 3}));
-        document.getElementById('escolasLayerToggle').onclick = () => loadGeneric('escolasLayerToggle', 'data/escolas.geojson', null, null, true, ()=>iconS('#0076a5','fas fa-school'));
+        document.getElementById('escolasLayerToggle').onclick = () => loadGeneric('escolasLayerToggle', 'data/escolas.geojson', null, null, true, (f) => iconS(getEscolaColor(f.properties['Dependênc']), 'fas fa-map-marker-alt'));
+
+        document.getElementById('postosSaudeLayerToggle').onclick = () => loadGeneric('postosSaudeLayerToggle', 'data/saude_santarita.geojson', null, null, true, (f) => {
+            const val = (f.properties['TIPO'] || f.properties['tipo'] || '').toUpperCase().trim();
+            let icone = 'fas fa-map-marker-alt'; 
+            if (val === 'HOSPITAL') icone = 'fas fa-hospital';
+            else if (val === 'SERVIÇO' || val === 'SERVICO' || val.includes('CENTRO')) icone = 'fas fa-clinic-medical';
+            return iconS(getSaudeColor(val), icone);
+        });
+
         document.getElementById('crechesLayerToggle').onclick = () => loadGeneric('crechesLayerToggle', 'data/creches.geojson', null, null, true, ()=>iconS('#1abc9c','fas fa-child'));
-        document.getElementById('postosSaudeLayerToggle').onclick = () => loadGeneric('postosSaudeLayerToggle', 'data/saude_santarita.geojson', null, null, true, ()=>iconS('#e74c3c','fas fa-hospital-user'));
-        document.getElementById('mercadosLayerToggle').onclick = () => loadGeneric('mercadosLayerToggle', 'data/mercados_feiras_matadouros.geojson', null, null, true, ()=>iconS('#f39c12','fas fa-shopping-basket'));
-        document.getElementById('baciasLayerToggle').onclick = () => loadGeneric('baciasLayerToggle', 'data/bacias_hidrograficas.geojson', (f)=>({color: getBaciaColor(f.properties.nome_bacia), fillColor: getBaciaColor(f.properties.nome_bacia), weight:2, fillOpacity:0.4}));
+
+        document.getElementById('mercadosLayerToggle').onclick = () => loadGeneric('mercadosLayerToggle', 'data/mercados_feiras_matadouros.geojson', null, null, true, (f) => {
+            const tipoVal = (f.properties['Tipo'] || f.properties['tipo'] || '').toUpperCase().trim();
+            const corPonto = getMercadoColor(tipoVal);
+            let iconePonto = 'fas fa-shopping-basket';
+            if (tipoVal.includes('MERCADO')) iconePonto = 'fas fa-store';
+            else if (tipoVal.includes('FEIRA')) iconePonto = 'fas fa-apple-alt';
+            else if (tipoVal.includes('ABATEDOURO')) iconePonto = 'fas fa-khanda';
+            return iconS(corPonto, iconePonto);
+        });
+
+        document.getElementById('baciasLayerToggle').onclick = () => loadGeneric(
+            'baciasLayerToggle', 
+            'data/bacias_hidrograficas.geojson', 
+            (f) => ({ color: getBaciaColor(f.properties.nome_bacia), fillColor: getBaciaColor(f.properties.nome_bacia), weight: 1.5, fillOpacity: 0.3 }),
+            (f, l) => {
+                l.bindPopup(createPopupContent(f.properties, "nome_bacia"));
+                addHoverEffect(l, 'baciasLayerToggle');
+            }
+        );
 
         document.querySelectorAll('.accordion-title').forEach(t => t.onclick = () => t.parentElement.classList.toggle('active'));
         document.getElementById('sidebarToggleBtn').onclick = () => document.getElementById('sidebarMenu').classList.add('active');
-        
-        // Evento de clique para o X discreto fechar o menu
         document.getElementById('closeSidebarBtn').onclick = () => document.getElementById('sidebarMenu').classList.remove('active');
-        
         document.getElementById('limitesLayerToggle').click();
     </script>
 </body>
