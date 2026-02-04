@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Santa Rita GeoPB | SIG</title>
+    <title>Santa Rita em mapas | SIG</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -13,6 +13,8 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
     <script src="https://ppete2.github.io/Leaflet.PolylineMeasure/Leaflet.PolylineMeasure.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.8.0/proj4.js"></script>
     
     <style>
         :root {
@@ -27,21 +29,63 @@
         path.leaflet-interactive:focus { outline: none !important; }
         .leaflet-container :focus { outline: none !important; }
 
+        /* --- ESTILOS DO SLIDESHOW DE FUNDO --- */
         #welcomeOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, var(--cor-principal) 0%, #003d57 100%);
             z-index: 9999; display: flex; flex-direction: column;
             align-items: center; justify-content: center; color: white;
             transition: opacity 0.8s ease, visibility 0.8s;
+            overflow: hidden;
+            background-color: black;
         }
+
+        .slideshow-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -2;
+        }
+
+        .slideshow-bg img {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            animation: imageFade 10s linear infinite;
+        }
+
+        .slideshow-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.45); 
+            z-index: -1;
+        }
+
+        @keyframes imageFade {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            50% { opacity: 1; }
+            60% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        .slideshow-bg img:nth-child(1) { animation-delay: 0s; }
+        .slideshow-bg img:nth-child(2) { animation-delay: 5s; }
+
         #welcomeOverlay.hidden { opacity: 0; visibility: hidden; }
-        #welcomeOverlay h1 { font-size: 2.2em; font-weight: 700; text-align: center; margin-bottom: 20px; text-transform: uppercase; }
+
+        #welcomeOverlay h1 { 
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.2em; font-weight: 700; text-align: center; 
+            margin-bottom: 20px; text-transform: uppercase;
+            text-shadow: 2px 2px 12px rgba(0,0,0,0.9);
+            padding: 0 20px;
+        }
+
         #welcomeOverlay .enter-btn {
             padding: 15px 45px; background-color: #ffffff; color: var(--cor-principal);
             border: none; border-radius: 50px; font-weight: 700; font-size: 1.1em;
-            cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.3s;
+            cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: 0.3s;
         }
+        #welcomeOverlay .enter-btn:hover { transform: scale(1.05); background-color: var(--cor-principal); color: white; }
 
+        /* --- RESTANTE DO CSS --- */
         html, body { height: 100%; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; overflow: hidden; }
         #mapid { width: 100%; height: 100%; z-index: 0; position: absolute; background-color: #ffffff; }
         
@@ -49,6 +93,15 @@
             position: absolute; top: 20px; left: 20px; z-index: 1000; 
             background-color: var(--cor-principal); color: white; border: none; 
             width: 45px; height: 45px; border-radius: 5px; cursor: pointer; box-shadow: var(--sombra-media);
+        }
+
+        /* Painel UTM à Esquerda */
+        #coords-display {
+            position: absolute; bottom: 10px; right: 80px; z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 15px; border-radius: 4px; border: 1px solid var(--cor-borda);
+            box-shadow: var(--sombra-media); font-size: 11px; color: #333;
+            pointer-events: none; line-height: 1.5; font-family: 'monospace';
         }
 
         .map-legend {
@@ -60,7 +113,6 @@
         .legend-title { font-weight: 700; margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; color: var(--cor-principal); text-transform: uppercase; }
         .legend-subtitle { font-weight: 700; font-size: 10px; color: #666; margin-top: 10px; margin-bottom: 5px; border-left: 3px solid var(--cor-principal); padding-left: 5px; text-transform: uppercase;}
         .legend-item { display: flex; align-items: center; margin-bottom: 6px; line-height: 1.2; }
-        
         .legend-symbol { width: 18px; height: 18px; margin-right: 8px; flex-shrink: 0; box-sizing: border-box; }
         .legend-line { height: 4px; width: 22px; margin-right: 8px; flex-shrink: 0; border-radius: 2px; }
 
@@ -72,11 +124,7 @@
         .sidebar.active { left: 0; }
         .sidebar-header { padding: 20px; background-color: var(--cor-principal); color: white; display: flex; align-items: center; justify-content: space-between; }
         .sidebar-header img { max-height: 45px; }
-        
-        .close-sidebar-btn { 
-            background: none; border: none; color: rgba(255,255,255,0.7); 
-            font-size: 1.1em; cursor: pointer; transition: 0.3s;
-        }
+        .close-sidebar-btn { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.1em; cursor: pointer; transition: 0.3s; }
         .close-sidebar-btn:hover { color: white; }
 
         .accordion-container { overflow-y: auto; flex-grow: 1; }
@@ -84,7 +132,6 @@
         .accordion-title { padding: 15px 20px; background-color: var(--cor-fundo); font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s; padding: 0 20px; }
         .accordion-item.active .accordion-content { max-height: 1000px; padding-bottom: 15px; }
-        
         .layer-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid var(--cor-borda); font-size: 0.9em; }
 
         .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
@@ -94,36 +141,35 @@
         input:checked + .slider { background-color: var(--cor-principal); }
         input:checked + .slider:before { transform: translateX(16px); }
 
-        .label-curvas {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            color: #8B4513; 
-            font-weight: 300; 
-            font-size: 10px;
-            text-shadow: -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff;
-            pointer-events: none;
-        }
-
+        .label-curvas { background: transparent !important; border: none !important; box-shadow: none !important; color: #8B4513; font-weight: 300; font-size: 10px; text-shadow: -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff; pointer-events: none; }
         .label-style { background: transparent !important; border: none !important; box-shadow: none !important; color: #333; font-weight: 400; font-size: 8px; text-shadow: 1px 1px 0 #fff; text-transform: uppercase; pointer-events: none; }
         .custom-icon { background: none !important; border: none !important; }
-        
-        .popup-custom-content { font-family: 'Poppins', sans-serif; min-width: 200px; font-size: 12px; }
+        .popup-custom-content { font-family: 'Poppins', sans-serif; min-width: 180px; font-size: 12px; }
         .popup-custom-content h3 { margin: 0 0 5px 0; color: var(--cor-principal); font-size: 1.1em; font-weight: 700; line-height: 1.2; text-transform: uppercase; }
         .popup-custom-content hr { border: 0; border-top: 1px solid var(--cor-borda); margin: 8px 0; }
-        
         .sidebar-footer { padding: 20px; font-size: 10px; color: #777; text-align: center; border-top: 1px solid var(--cor-borda); background-color: #fff; line-height: 1.4; }
     </style>
 </head>
 <body>
 
     <div id="welcomeOverlay">
-        <img src="srlogo.png" alt="Logo" style="max-height: 100px; margin-bottom: 20px;">
-        <h1>BEM-VINDOS AO WEBGIS SANTA RITA</h1>
-        <button class="enter-btn" onclick="document.getElementById('welcomeOverlay').classList.add('hidden')">ACESSAR</button>
+        <div class="slideshow-bg">
+            <img src="data/foto1.jpg" alt="Santa Rita 1">
+            <img src="data/foto2.jpg" alt="Santa Rita 2">
+        </div>
+        <div class="slideshow-overlay"></div>
+
+        <img src="srlogo.png" alt="Logo" style="max-height: 120px; margin-bottom: 20px; z-index: 1;">
+        <h1>BEM-VINDOS AO SIGWEB SANTA RITA/PB</h1>
+        <button class="enter-btn" onclick="document.getElementById('welcomeOverlay').classList.add('hidden')" style="z-index: 1;">ACESSAR</button>
     </div>
 
     <button id="sidebarToggleBtn"><i class="fas fa-layer-group"></i></button>
+
+    <div id="coords-display">
+        GCS: 0.000000, 0.000000<br>
+        UTM: 000000.000 E, 0000000.000 N
+    </div>
 
     <div id="legendContainer" class="map-legend">
         <div class="legend-title">LEGENDA</div>
@@ -182,7 +228,14 @@
     <div id="mapid"></div>
 
     <script>
-        var mymap = L.map('mapid').setView([-7.1189, -34.9608], 13);
+        // CONFIGURAÇÕES BASE
+        const zoomOriginal = 13;
+        const centroOriginal = [-7.1189, -34.9608];
+
+        // UTM Zone 25S
+        proj4.defs("EPSG:31985", "+proj=utm +zone=25 +south +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
+
+        var mymap = L.map('mapid').setView(centroOriginal, zoomOriginal);
         mymap.zoomControl.setPosition('topright');
 
         var whiteLayer = L.tileLayer('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEAAQMAAABmvDolAAAAA1BMVEX///+nxBvIAAAAH0lEQVQYGe3BAQ0AAADCIPunfg43YAAAAAAAAAAA5wIhAAAB9aK9BAAAAABJRU5ErkJggg==');
@@ -190,11 +243,22 @@
         var satLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}');
         var darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png');
 
-        whiteLayer.addTo(mymap);
+        satLayer.addTo(mymap);
 
         var baseMaps = { "Fundo Branco": whiteLayer, "Fundo Preto": darkLayer, "Satélite": satLayer, "OpenStreetMap": osmLayer };
         L.control.layers(baseMaps, {}, {position: 'topright'}).addTo(mymap);
         L.control.polylineMeasure({ position: 'topright', unit: 'kilometres' }).addTo(mymap);
+
+        // COORDENADAS EM TEMPO REAL
+        mymap.on('mousemove', function(e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            const utm = proj4("EPSG:4326", "EPSG:31985", [lng, lat]);
+
+            document.getElementById('coords-display').innerHTML = 
+                `GCS: ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>` +
+                `UTM: ${utm[0].toFixed(3)} E, ${utm[1].toFixed(3)} N`;
+        });
 
         var activeLayers = {};
 
@@ -220,10 +284,10 @@
 
         function getMercadoColor(tipo) {
             const t = (tipo || '').toUpperCase().trim();
-            if (t.includes('MERCADO')) return '#e67e22';    
-            if (t.includes('FEIRA')) return '#27ae60';      
-            if (t.includes('ABATEDOURO')) return '#c0392b'; 
-            return '#f39c12'; 
+            if (t.includes('MERCADO')) return '#1b5e20';    // VERDE ESCURO
+            if (t.includes('FEIRA')) return '#f1c40f';      // Amarelo
+            if (t.includes('ABATEDOURO')) return '#9b59b6'; // Roxo
+            return '#7f8c8d'; 
         }
 
         function getBaciaColor(name) {
@@ -244,58 +308,26 @@
             });
         }
 
-        // FUNÇÃO DE POPUP CENTRALIZADA E CORRIGIDA
-        function createPopupContent(props, layerType) {
-            let html = `<div class="popup-custom-content">`;
-            
-            if (layerType === 'saude') {
-                html += `<h3>${props.Informação || 'informação'}</h3><hr>`;
-                html += `<b>NOME:</b> ${props.NO_FANTASI || 'N/A'}<br>`;
-                html += `<b>Código CNES:</b> ${props.CO_CNES || 'N/A'}<br>`;
-                html += `<b>ESFERA:</b> ${props.DS_ESFERA_ || 'N/A'}<br>`;
-                html += `<b>Endereço:</b> ${props.NO_LOGRADO || 'N/A'}<br>`;
-                html += `<b>Número:</b> ${props.NU_ENDEREC || 'N/A'}<br>`;
-                html += `<b>TIPO:</b> ${props.TIPO || 'N/A'}<br>`;
-                html += `<b>BAIRRO:</b> ${props.NO_BAIRRO || 'N/A'}<br>`;
-                html += `<b>ATENDIMENTO:</b> ${props.DS_TURNO_A || 'N/A'}<br>`;
-                html += `<b>LATITUDE:</b> ${props.NU_LATIT_1 || 'N/A'}<br>`;
-                html += `<b>LONGITUDE:</b> ${props.NU_LONGI_1 || 'N/A'}`;
-            } 
-            else if (layerType === 'escola') {
-                html += `<h3>${props.Informação || props.nome || 'Informação'}</h3><hr>`;
-                html += `<b>Escola:</b> ${props.Escola || props.nome || 'N/A'}<br>`;
-                html += `<b>Código Inep:</b> ${props.Código_IN || props.Código_IN || 'N/A'}<br>`;
-                html += `<b>UF:</b> ${props.UF || 'PB'}<br>`;
-                html += `<b>Município:</b> ${props.Município || 'Santa Rita'}<br>`;
-                html += `<b>Categoria:</b> ${props.Categoria || 'N/A'}<br>`;
-                html += `<b>Endereço:</b> ${props.Endereço || 'N/A'}<br>`;
-                html += `<b>Porte:</b> ${props.Porte_da_E || 'N/A'}<br>`;
-                html += `<b>Telefone:</b> ${props.Telefone || 'N/A'}<br>`;
-                html += `<b>Dependência:</b> ${props.Dependênc || 'N/A'}`;
-            }
-            else if (layerType === 'creche') {
-                html += `<h3>${props.NOME || props.nome || 'Creche'}</h3><hr>`;
-                html += `<b>Nome:</b> ${props.NOME || props.nome || 'N/A'}<br>`;
-                html += `<b>Bairro:</b> ${props.BAIRRO || props.Bairro || 'N/A'}`;
-            }
-            else {
-                const nomesPersonalizados = {
-                    "NM_BAIRRO": "Bairro", "NM_MUN": "Município", "SITUACAO": "Situação",
-                    "Area_Km2": "Área (Km²)", "pop_ibge2022": "População (2022)",
-                    "nome_bacia": "Bacia", "area_total": "Área Total (Km²)"
-                };
-                let title = props.NOME || props.nome || props.NM_BAIRRO || "Informação";
-                html += `<h3>${title}</h3><hr>`;
-                for (let key in props) {
-                    if (key !== 'NOME' && key !== 'nome' && typeof props[key] !== 'object') {
-                        let label = nomesPersonalizados[key] || key;
-                        html += `<b>${label}:</b> ${props[key]}<br>`;
+        function createPopupContent(props, titleField) {
+            let title = props[titleField] || "Informações";
+            let html = `<div class="popup-custom-content"><h3>${title}</h3><hr>`;
+            for (let key in props) {
+                if (key !== titleField && props[key] !== null && props[key] !== undefined) {
+                    let valor = props[key];
+                    if (typeof valor === 'number') {
+                        valor = valor.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
                     }
+                    html += `<b>${key}:</b> ${valor}<br>`;
                 }
             }
-            
             html += `</div>`;
             return html;
+        }
+
+        function bindDefaultPopup(f, l) {
+            const possibleTitles = ["NM_EQUIPAM", "nome", "NOME", "Nome", "NM_BAIRRO", "Linha", "ELEV"];
+            let titleField = possibleTitles.find(field => f.properties[field]) || Object.keys(f.properties)[0];
+            l.bindPopup(createPopupContent(f.properties, titleField));
         }
 
         function updateLegend() {
@@ -336,8 +368,17 @@
                     }
                     else if (id === 'mercadosLayerToggle') {
                         content.innerHTML += `<div class="legend-subtitle">MERCADOS E FEIRAS:</div>`;
-                        const tiposM = [{n:'Mercado', c:'#e67e22'}, {n:'Feira', c:'#27ae60'}, {n:'Abatedouro', c:'#c0392b'}];
-                        tiposM.forEach(t => { content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border: 1px solid ${t.c}; background: ${t.c}; opacity: 0.8;"></div><span>${t.n}</span></div>`; });
+                        const tiposM = [
+                            {n:'Mercado', c:'#1b5e20'},    // VERDE ESCURO
+                            {n:'Feira', c:'#f1c40f'},      // Amarelo
+                            {n:'Abatedouro', c:'#9b59b6'}  // Roxo
+                        ];
+                        tiposM.forEach(t => { 
+                            content.innerHTML += `<div class="legend-item">
+                                <div class="legend-symbol" style="border: 1px solid ${t.c}; background: ${t.c}; opacity: 0.8;"></div>
+                                <span>${t.n}</span>
+                            </div>`; 
+                        });
                     }
                     else if (id === 'itinerarioLayerToggle') {
                         content.innerHTML += `<div class="legend-subtitle">ITINERÁRIOS:</div>`;
@@ -361,81 +402,102 @@
             container.style.display = hasVisible ? 'block' : 'none';
         }
 
+        // FUNÇÃO PARA CARREGAMENTO E ZOOM AUTOMÁTICO
         function loadGeneric(id, path, styleFunc, onEachFunc, isPoint, iconFunc) {
             let check = document.getElementById(id).checked;
+            
             if (activeLayers[id]) {
-                if (check) activeLayers[id].addTo(mymap); else mymap.removeLayer(activeLayers[id]);
+                if (check) {
+                    activeLayers[id].addTo(mymap);
+                    if (activeLayers[id].getLayers().length > 0) {
+                        mymap.fitBounds(activeLayers[id].getBounds(), { padding: [20, 20], maxZoom: 16 });
+                    }
+                } else {
+                    mymap.removeLayer(activeLayers[id]);
+                }
                 updateLegend(); return;
             }
+
             if (!check) return;
+
             fetch(path).then(r => r.json()).then(data => {
                 activeLayers[id] = L.geoJson(data, {
                     style: styleFunc,
                     pointToLayer: isPoint ? (f, latlng) => L.marker(latlng, {icon: iconFunc(f)}) : null,
-                    onEachFeature: (f, l) => {
-                        if (onEachFunc) onEachFunc(f, l); 
-                    }
+                    onEachFeature: (f, l) => { if (onEachFunc) onEachFunc(f, l); }
                 }).addTo(mymap);
-                if (activeLayers[id].getBounds && activeLayers[id].getLayers().length > 0) mymap.fitBounds(activeLayers[id].getBounds());
+
+                if (activeLayers[id].getLayers().length > 0) {
+                    mymap.fitBounds(activeLayers[id].getBounds(), {
+                        padding: [30, 30],
+                        maxZoom: 16 
+                    });
+                }
                 updateLegend();
             });
         }
 
         const iconS = (c, i) => L.divIcon({className:'custom-icon', html:`<i class="${i}" style="color:${c}; font-size:18px; text-shadow: 1px 1px 1px #fff;"></i>`});
 
-        document.getElementById('limitesLayerToggle').onclick = () => loadGeneric('limitesLayerToggle', 'data/Limite_municipal.geojson', ()=>({color:'red', weight:2, fill:false}), (f, l) => l.bindPopup(createPopupContent(f.properties, "geral")));
+        // --- EVENTOS DE CLIQUE ---
+        document.getElementById('limitesLayerToggle').onclick = () => loadGeneric('limitesLayerToggle', 'data/Limite_municipal.geojson', ()=>({color:'red', weight:2, fill:false}), (f, l) => bindDefaultPopup(f, l));
         document.getElementById('bairrosLayerToggle').onclick = () => loadGeneric('bairrosLayerToggle', 'data/Bairros.geojson', ()=>({color:'#e67e22', fillColor:'#f39c12', weight:2, fillOpacity:0.4}), (f, l) => {
-            l.bindPopup(createPopupContent(f.properties, "geral"));
+            l.bindPopup(createPopupContent(f.properties, "NM_BAIRRO"));
             if (f.properties.NM_BAIRRO) l.bindTooltip(f.properties.NM_BAIRRO, { permanent: true, direction: 'center', className: 'label-style' });
             addHoverEffect(l, 'bairrosLayerToggle');
         });
-        document.getElementById('distritosLayerToggle').onclick = () => loadGeneric('distritosLayerToggle', 'data/distritos_rurais.geojson', ()=>({color:'#5D2E0C', fillColor:'#8B4513', weight:2, fillOpacity:0.2}), (f, l) => l.bindPopup(createPopupContent(f.properties, "geral")));
-        document.getElementById('setoresLayerToggle').onclick = () => loadGeneric('setoresLayerToggle', 'data/setores.geojson', ()=>({color:'#0099cc', fillColor:'#00ccff', weight:1, fillOpacity:0.15}), (f, l) => l.bindPopup(createPopupContent(f.properties, "geral")));
-        document.getElementById('zonaUrbanaLayerToggle').onclick = () => loadGeneric('zonaUrbanaLayerToggle', 'data/zona_urbana.geojson', ()=>({color:'#1b5e20', fillColor:'#4caf50', weight:1, fillOpacity:0.1}), (f, l) => l.bindPopup(createPopupContent(f.properties, "geral")));
-        document.getElementById('ruidoLayerToggle').onclick = () => loadGeneric('ruidoLayerToggle', 'data/ruido_urbano.geojson', ()=>({color:'#ff9900', fillColor:'#ffcc00', weight:2, fillOpacity:0.3}), (f, l) => l.bindPopup(createPopupContent(f.properties, "geral")));
-        document.getElementById('pracasLayerToggle').onclick = () => loadGeneric('pracasLayerToggle', 'data/pracas.geojson', ()=>({color:'#f1c40f', fillColor:'#feca57', weight:2, fillOpacity:0.6}), (f, l) => l.bindPopup(createPopupContent(f.properties, "geral")));
-        document.getElementById('aterroLayerToggle').onclick = () => loadGeneric('aterroLayerToggle', 'data/aterro_sanitario.geojson', ()=>({color:'#3e2723', fillColor:'#5d4037', weight:2, fillOpacity:0.5}), (f, l) => l.bindPopup(createPopupContent(f.properties, "geral")));
+        document.getElementById('distritosLayerToggle').onclick = () => loadGeneric('distritosLayerToggle', 'data/distritos_rurais.geojson', ()=>({color:'#5D2E0C', fillColor:'#8B4513', weight:2, fillOpacity:0.2}), (f, l) => {
+            bindDefaultPopup(f, l);
+            addHoverEffect(l, 'distritosLayerToggle');
+        });
+        document.getElementById('setoresLayerToggle').onclick = () => loadGeneric('setoresLayerToggle', 'data/setores.geojson', ()=>({color:'#0099cc', fillColor:'#00ccff', weight:1, fillOpacity:0.15}), (f, l) => bindDefaultPopup(f, l));
+        document.getElementById('zonaUrbanaLayerToggle').onclick = () => loadGeneric('zonaUrbanaLayerToggle', 'data/zona_urbana.geojson', ()=>({color:'#1b5e20', fillColor:'#4caf50', weight:1, fillOpacity:0.1}), (f, l) => bindDefaultPopup(f, l));
+        document.getElementById('ruidoLayerToggle').onclick = () => loadGeneric('ruidoLayerToggle', 'data/ruido_urbano.geojson', ()=>({color:'#ff9900', fillColor:'#ffcc00', weight:2, fillOpacity:0.3}), (f, l) => bindDefaultPopup(f, l));
+        document.getElementById('pracasLayerToggle').onclick = () => loadGeneric('pracasLayerToggle', 'data/pracas.geojson', ()=>({color:'#f1c40f', fillColor:'#feca57', weight:2, fillOpacity:0.6}), (f, l) => bindDefaultPopup(f, l));
+        document.getElementById('aterroLayerToggle').onclick = () => loadGeneric('aterroLayerToggle', 'data/aterro_sanitario.geojson', ()=>({color:'#3e2723', fillColor:'#5d4037', weight:2, fillOpacity:0.5}), (f, l) => bindDefaultPopup(f, l));
         document.getElementById('curvasLayerToggle').onclick = () => loadGeneric('curvasLayerToggle', 'data/curvas.geojson', (f) => {
             const isMestra = f.properties && f.properties.ELEV && f.properties.ELEV % 50 === 0;
             return { color: '#8B4513', weight: isMestra ? 1.8 : 0.6, opacity: isMestra ? 0.9 : 0.5 };
         }, (f, l) => {
+            bindDefaultPopup(f, l);
             if (f.properties && f.properties.ELEV && f.properties.ELEV % 50 === 0) {
                 l.bindTooltip(f.properties.ELEV.toString(), { permanent: true, direction: 'center', className: 'label-curvas' });
             }
-            l.bindPopup(createPopupContent(f.properties, "geral"));
         });
-        document.getElementById('itinerarioLayerToggle').onclick = () => loadGeneric('itinerarioLayerToggle', 'data/itinerario.geojson', (f)=>({color: (f.properties.cor || 'green'), weight: 3}), (f, l) => l.bindPopup(createPopupContent(f.properties, "geral")));
-        
-        document.getElementById('escolasLayerToggle').onclick = () => loadGeneric('escolasLayerToggle', 'data/escolas.geojson', null, (f, l) => l.bindPopup(createPopupContent(f.properties, 'escola')), true, (f) => iconS(getEscolaColor(f.properties['Dependênc']), 'fas fa-map-marker-alt'));
-        
-        document.getElementById('postosSaudeLayerToggle').onclick = () => loadGeneric('postosSaudeLayerToggle', 'data/saude_santarita.geojson', null, (f, l) => l.bindPopup(createPopupContent(f.properties, 'saude')), true, (f) => {
+        document.getElementById('itinerarioLayerToggle').onclick = () => loadGeneric('itinerarioLayerToggle', 'data/itinerario.geojson', (f)=>({color: (f.properties.cor || 'green'), weight: 3}), (f, l) => bindDefaultPopup(f, l));
+        document.getElementById('escolasLayerToggle').onclick = () => loadGeneric('escolasLayerToggle', 'data/escolas.geojson', null, (f, l) => bindDefaultPopup(f, l), true, (f) => iconS(getEscolaColor(f.properties['Dependênc']), 'fas fa-map-marker-alt'));
+        document.getElementById('postosSaudeLayerToggle').onclick = () => loadGeneric('postosSaudeLayerToggle', 'data/saude_santarita.geojson', null, (f, l) => bindDefaultPopup(f, l), true, (f) => {
             const val = (f.properties['TIPO'] || f.properties['tipo'] || '').toUpperCase().trim();
             let icone = 'fas fa-map-marker-alt'; 
             if (val === 'HOSPITAL') icone = 'fas fa-hospital';
             else if (val === 'SERVIÇO' || val === 'SERVICO' || val.includes('CENTRO')) icone = 'fas fa-clinic-medical';
             return iconS(getSaudeColor(val), icone);
         });
-
-        document.getElementById('crechesLayerToggle').onclick = () => loadGeneric('crechesLayerToggle', 'data/creches.geojson', null, (f, l) => l.bindPopup(createPopupContent(f.properties, 'creche')), true, ()=>iconS('#1abc9c','fas fa-child'));
+        document.getElementById('crechesLayerToggle').onclick = () => loadGeneric('crechesLayerToggle', 'data/creches.geojson', null, (f, l) => bindDefaultPopup(f, l), true, ()=>iconS('#1abc9c','fas fa-child'));
         
-        document.getElementById('mercadosLayerToggle').onclick = () => loadGeneric('mercadosLayerToggle', 'data/mercados_feiras_matadouros.geojson', null, (f, l) => l.bindPopup(createPopupContent(f.properties, "geral")), true, (f) => {
-            const tipoVal = (f.properties['Tipo'] || f.properties['tipo'] || '').toUpperCase().trim();
-            const corPonto = getMercadoColor(tipoVal);
-            let iconePonto = 'fas fa-shopping-basket';
-            if (tipoVal.includes('MERCADO')) iconePonto = 'fas fa-store';
-            else if (tipoVal.includes('FEIRA')) iconePonto = 'fas fa-apple-alt';
-            else if (tipoVal.includes('ABATEDOURO')) iconePonto = 'fas fa-khanda';
-            return iconS(corPonto, iconePonto);
-        });
+        // AJUSTE: CAMADA DE MERCADOS COMO POLÍGONO
+        document.getElementById('mercadosLayerToggle').onclick = () => loadGeneric(
+            'mercadosLayerToggle', 
+            'data/mercados_feiras_matadouros.geojson', 
+            (f) => {
+                const tipoVal = (f.properties['Tipo'] || f.properties['tipo'] || f.properties['TIPO'] || '').toUpperCase().trim();
+                const cor = getMercadoColor(tipoVal);
+                return { color: cor, fillColor: cor, weight: 2, fillOpacity: 0.6 };
+            }, 
+            (f, l) => bindDefaultPopup(f, l)
+        );
+
         document.getElementById('baciasLayerToggle').onclick = () => loadGeneric('baciasLayerToggle', 'data/bacias_hidrograficas.geojson', (f) => ({ color: getBaciaColor(f.properties.nome_bacia), fillColor: getBaciaColor(f.properties.nome_bacia), weight: 1.5, fillOpacity: 0.3 }), (f, l) => {
-            l.bindPopup(createPopupContent(f.properties, "geral"));
+            l.bindPopup(createPopupContent(f.properties, "nome_bacia"));
             addHoverEffect(l, 'baciasLayerToggle');
         });
 
         document.querySelectorAll('.accordion-title').forEach(t => t.onclick = () => t.parentElement.classList.toggle('active'));
         document.getElementById('sidebarToggleBtn').onclick = () => document.getElementById('sidebarMenu').classList.add('active');
         document.getElementById('closeSidebarBtn').onclick = () => document.getElementById('sidebarMenu').classList.remove('active');
-        document.getElementById('limitesLayerToggle').click();
+        
+        // CARGA INICIAL
+        loadGeneric('limitesLayerToggle', 'data/Limite_municipal.geojson', ()=>({color:'red', weight:2, fill:false}), (f, l) => bindDefaultPopup(f, l));
     </script>
 </body>
 </html>
