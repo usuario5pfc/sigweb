@@ -23,168 +23,65 @@
             --cor-texto-claro: #ffffff;
             --cor-texto-escuro: #333333;
             --cor-borda: #dddddd;
-            --sombra-media: 0 4px 8px rgba(0, 0, 0, 0.15);
+            --sombra-media: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         path.leaflet-interactive:focus { outline: none !important; }
         .leaflet-container :focus { outline: none !important; }
 
-        /* --- ESTILOS DO SLIDESHOW DE FUNDO --- */
+        /* --- ESTILOS DO SLIDESHOW --- */
         #welcomeOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 9999; display: flex; flex-direction: column;
             align-items: center; justify-content: center; color: white;
             transition: opacity 0.8s ease, visibility 0.8s;
-            overflow: hidden;
-            background-color: black;
+            overflow: hidden; background-color: black;
         }
-
-        .slideshow-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -2;
-        }
-
-        .slideshow-bg img {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover;
-            opacity: 0;
-            animation: imageFade 10s linear infinite;
-        }
-
-        .slideshow-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.45); 
-            z-index: -1;
-        }
-
-        @keyframes imageFade {
-            0% { opacity: 0; }
-            10% { opacity: 1; }
-            50% { opacity: 1; }
-            60% { opacity: 0; }
-            100% { opacity: 0; }
-        }
-
+        .slideshow-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
+        .slideshow-bg img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; animation: imageFade 10s linear infinite; }
+        .slideshow-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.45); z-index: -1; }
+        @keyframes imageFade { 0% { opacity: 0; } 10% { opacity: 1; } 50% { opacity: 1; } 60% { opacity: 0; } 100% { opacity: 0; } }
         .slideshow-bg img:nth-child(1) { animation-delay: 0s; }
         .slideshow-bg img:nth-child(2) { animation-delay: 5s; }
-
         #welcomeOverlay.hidden { opacity: 0; visibility: hidden; }
-
-        #welcomeOverlay h1 { 
-            font-family: 'Poppins', sans-serif;
-            font-size: 2.2em; font-weight: 700; text-align: center; 
-            margin-bottom: 20px; text-transform: uppercase;
-            text-shadow: 2px 2px 12px rgba(0,0,0,0.9);
-            padding: 0 20px;
-        }
-
-        #welcomeOverlay .enter-btn {
-            padding: 15px 45px; background-color: #ffffff; color: var(--cor-principal);
-            border: none; border-radius: 50px; font-weight: 700; font-size: 1.1em;
-            cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: 0.3s;
-        }
+        #welcomeOverlay h1 { font-family: 'Poppins', sans-serif; font-size: 2.2em; font-weight: 700; text-align: center; margin-bottom: 20px; text-transform: uppercase; text-shadow: 2px 2px 12px rgba(0,0,0,0.9); padding: 0 20px; }
+        #welcomeOverlay .enter-btn { padding: 15px 45px; background-color: #ffffff; color: var(--cor-principal); border: none; border-radius: 50px; font-weight: 700; font-size: 1.1em; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: 0.3s; }
         #welcomeOverlay .enter-btn:hover { transform: scale(1.05); background-color: var(--cor-principal); color: white; }
 
-        /* --- RESTANTE DO CSS --- */
+        /* --- MAPA E BARRA LATERAL --- */
         html, body { height: 100%; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; overflow: hidden; }
         #mapid { width: 100%; height: 100%; z-index: 0; position: absolute; background-color: #ffffff; }
-        
-        #sidebarToggleBtn { 
-            position: absolute; top: 20px; left: 20px; z-index: 1000; 
-            background-color: var(--cor-principal); color: white; border: none; 
-            width: 45px; height: 45px; border-radius: 5px; cursor: pointer; box-shadow: var(--sombra-media);
-        }
+        #sidebarToggleBtn { position: absolute; top: 20px; left: 20px; z-index: 1000; background-color: var(--cor-principal); color: white; border: none; width: 45px; height: 45px; border-radius: 5px; cursor: pointer; box-shadow: var(--sombra-media); }
+        .search-box { position: absolute; top: 10px; right: 55px; z-index: 1000; display: flex; background: white; padding: 5px; border-radius: 8px; box-shadow: var(--sombra-media); }
+        .search-box input { border: 1px solid var(--cor-borda); padding: 8px 12px; border-radius: 5px 0 0 5px; outline: none; width: 220px; font-family: 'Poppins', sans-serif; font-size: 12px; }
+        .search-box button { background-color: var(--cor-principal); color: white; border: none; padding: 8px 15px; border-radius: 0 5px 5px 0; cursor: pointer; transition: 0.3s; }
 
-        .search-box {
-            position: absolute;
-            top: 10px;
-            right: 55px; 
-            z-index: 1000;
-            display: flex;
-            background: white;
-            padding: 5px;
-            border-radius: 8px;
-            box-shadow: var(--sombra-media);
-        }
-
-        .search-box input {
-            border: 1px solid var(--cor-borda);
-            padding: 8px 12px;
-            border-radius: 5px 0 0 5px;
-            outline: none;
-            width: 220px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 12px;
-        }
-
-        .search-box button {
-            background-color: var(--cor-principal);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 0 5px 5px 0;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        #coords-display {
-            position: absolute;
-            bottom: 25px;
-            right: 25px;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(8px);
-            padding: 12px 18px;
-            border-radius: 12px;
-            border: 1px solid rgba(0, 118, 165, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            font-family: 'Poppins', sans-serif;
-            color: var(--cor-texto-escuro);
-            pointer-events: none;
-        }
-
+        #coords-display { position: absolute; bottom: 25px; right: 25px; z-index: 1000; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); padding: 12px 18px; border-radius: 12px; border: 1px solid rgba(0, 118, 165, 0.2); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); font-family: 'Poppins', sans-serif; color: var(--cor-texto-escuro); pointer-events: none; }
         .coord-row { display: flex; align-items: center; margin-bottom: 4px; }
         .coord-label { font-weight: 700; color: var(--cor-principal); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; width: 40px; margin-right: 10px; border-right: 2px solid var(--cor-principal); }
         .coord-value { font-family: 'monospace'; font-size: 13px; color: #444; font-weight: 600; }
 
-        .map-legend {
-            position: absolute; top: 180px; right: 10px; z-index: 1000;
-            background: white; padding: 12px; border-radius: 8px;
-            box-shadow: var(--sombra-media); max-height: 55vh; 
-            overflow-y: auto; display: none; width: 230px; font-size: 11px;
-        }
+        .map-legend { position: absolute; top: 180px; right: 10px; z-index: 1000; background: white; padding: 12px; border-radius: 8px; box-shadow: var(--sombra-media); max-height: 55vh; overflow-y: auto; display: none; width: 230px; font-size: 11px; }
         .legend-title { font-weight: 700; margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; color: var(--cor-principal); text-transform: uppercase; }
         .legend-subtitle { font-weight: 700; font-size: 10px; color: #666; margin-top: 10px; margin-bottom: 5px; border-left: 3px solid var(--cor-principal); padding-left: 5px; text-transform: uppercase;}
         .legend-item { display: flex; align-items: center; margin-bottom: 6px; line-height: 1.2; }
         .legend-symbol { width: 18px; height: 18px; margin-right: 8px; flex-shrink: 0; box-sizing: border-box; }
         .legend-line { height: 4px; width: 22px; margin-right: 8px; flex-shrink: 0; border-radius: 2px; }
 
-        .sidebar { 
-            position: absolute; top: 0; left: -320px; width: 300px; height: 100%; 
-            background-color: var(--cor-texto-claro); box-shadow: 2px 0 10px rgba(0,0,0,0.2); 
-            z-index: 2000; display: flex; flex-direction: column; transition: left 0.4s ease; 
-        }
+        .sidebar { position: absolute; top: 0; left: -320px; width: 300px; height: 100%; background-color: var(--cor-texto-claro); box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 2000; display: flex; flex-direction: column; transition: left 0.4s ease; }
         .sidebar.active { left: 0; }
         .sidebar-header { padding: 20px; background-color: var(--cor-principal); color: white; display: flex; align-items: center; justify-content: space-between; }
         .sidebar-header img { max-height: 45px; }
         .close-sidebar-btn { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.1em; cursor: pointer; transition: 0.3s; }
         .close-sidebar-btn:hover { color: white; }
-
         .accordion-container { overflow-y: auto; flex-grow: 1; }
         .accordion-item { border-bottom: 1px solid var(--cor-borda); }
         .accordion-title { padding: 15px 20px; background-color: var(--cor-fundo); font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s; padding: 0 20px; }
         .accordion-item.active .accordion-content { max-height: 1000px; padding-bottom: 15px; }
         .layer-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid var(--cor-borda); font-size: 0.9em; }
-
-        /* ESTILO DO BOTÃO DE DOWNLOAD */
-        .download-btn-link {
-            text-decoration: none; background-color: var(--cor-principal); color: white !important; 
-            padding: 5px 10px; border-radius: 4px; font-size: 10px; font-weight: 600;
-            display: inline-flex; align-items: center; gap: 5px; transition: 0.3s;
-        }
+        .download-btn-link { text-decoration: none; background-color: var(--cor-principal); color: white !important; padding: 5px 10px; border-radius: 4px; font-size: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; transition: 0.3s; }
         .download-btn-link:hover { background-color: #005a80; }
-
         .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 20px; transition: 0.4s; }
@@ -192,12 +89,40 @@
         input:checked + .slider { background-color: var(--cor-principal); }
         input:checked + .slider:before { transform: translateX(16px); }
 
+        /* --- AJUSTE PARA DESIGN HORIZONTAL DO POPUP --- */
+        .leaflet-popup-content-wrapper { padding: 0; border-radius: 12px; box-shadow: var(--sombra-media); }
+        .leaflet-popup-content { margin: 0; width: 450px !important; } /* Aumentado de 300px para 450px */
+        .leaflet-popup-tip-container { margin-top: -1px; }
+
+        .popup-container { overflow: hidden; border-radius: 12px; }
+        
+        .popup-header {
+            background: linear-gradient(135deg, var(--cor-principal), #005a80);
+            color: white; padding: 10px 15px; font-weight: 600; font-size: 13px;
+            display: flex; align-items: center; gap: 10px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        .popup-body { padding: 10px; background: #fff; max-height: 400px; overflow-y: auto; } /* Scroll caso haja muitos itens */
+
+        .popup-table-wrapper { border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+
+        .popup-table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+        .popup-table tr { display: inline-block; width: 50%; border-bottom: 1px solid #f2f2f2; box-sizing: border-box; vertical-align: top; } /* Exibe dois itens por linha */
+        .popup-table tr:hover { background-color: #f0f7fb; }
+        
+        .popup-table td { display: block; padding: 6px 10px; width: 100%; box-sizing: border-box; }
+        .attr-name {
+            font-weight: 700; color: var(--cor-principal); 
+            text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px;
+            padding-bottom: 0 !important;
+        }
+        .attr-value { color: #333; font-weight: 500; word-wrap: break-word; }
+
+        /* Estilos adicionais */
         .label-curvas { background: transparent !important; border: none !important; box-shadow: none !important; color: #8B4513; font-weight: 300; font-size: 10px; text-shadow: -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff; pointer-events: none; }
         .label-style { background: transparent !important; border: none !important; box-shadow: none !important; color: #333; font-weight: 400; font-size: 8px; text-shadow: 1px 1px 0 #fff; text-transform: uppercase; pointer-events: none; }
         .custom-icon { background: none !important; border: none !important; }
-        .popup-custom-content { font-family: 'Poppins', sans-serif; min-width: 180px; font-size: 12px; }
-        .popup-custom-content h3 { margin: 0 0 5px 0; color: var(--cor-principal); font-size: 1.1em; font-weight: 700; line-height: 1.2; text-transform: uppercase; }
-        .popup-custom-content hr { border: 0; border-top: 1px solid var(--cor-borda); margin: 8px 0; }
         .sidebar-footer { padding: 20px; font-size: 10px; color: #777; text-align: center; border-top: 1px solid var(--cor-borda); background-color: #fff; line-height: 1.4; }
     </style>
 </head>
@@ -310,6 +235,7 @@
     <div id="mapid"></div>
 
     <script>
+        // CONFIGURAÇÕES DO MAPA
         const zoomOriginal = 13;
         const centroOriginal = [-7.1189, -34.9608];
         proj4.defs("EPSG:31985", "+proj=utm +zone=25 +south +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
@@ -338,15 +264,68 @@
 
         var activeLayers = {};
 
+        // CORES E ESTILOS
         function getEscolaColor(dep) { const d = (dep || '').toUpperCase().trim(); if (d.includes('MUNICIPAL')) return '#0076a5'; if (d.includes('ESTADUAL')) return '#e74c3c'; if (d.includes('FEDERAL')) return '#2ecc71'; if (d.includes('PRIVADA')) return '#f39c12'; if (d.includes('FILANTROPICA')) return '#9b59b6'; return '#7f8c8d'; }
         function getSaudeColor(tipo) { const t = (tipo || '').toUpperCase().trim(); if (t === 'HOSPITAL') return '#ff00ff'; if (t.includes('CENTRO')) return '#ccff00'; if (t === 'SERVIÇO' || t === 'SERVICO') return '#2980b9'; if (t === 'UBS') return '#c0392b'; if (t === 'SECRETARIA') return '#8e44ad'; return '#e74c3c'; }
         function getMercadoColor(tipo) { const t = (tipo || '').toUpperCase().trim(); if (t.includes('MERCADO')) return '#1b5e20'; if (t.includes('FEIRA')) return '#f1c40f'; if (t.includes('ABATEDOURO')) return '#9b59b6'; return '#7f8c8d'; }
         function getPracaColor(tipo) { const t = (tipo || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim(); if (t.includes('PARQUE')) return '#ff0000'; if (t.includes('PRACA')) return '#0000ff'; if (t.includes('CALCADAO')) return '#ffff00'; return '#0000ff'; }
         function getBaciaColor(name) { let n = (name||'').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); if (n.includes('miriri')) return '#5DADE2'; if (n.includes('paraiba')) return '#45B39D'; if (n.includes('gramame')) return '#1B4F72'; return '#A9CCE3'; }
         function addHoverEffect(layer, layerId) { layer.on('mouseover', function (e) { var l = e.target; l.setStyle({ weight: 4, fillOpacity: 0.7 }); }); layer.on('mouseout', function (e) { activeLayers[layerId].resetStyle(e.target); }); }
-        function createPopupContent(props, titleField) { let title = props[titleField] || "Informações"; let html = `<div class="popup-custom-content"><h3>${title}</h3><hr>`; for (let key in props) { if (key !== titleField && props[key] !== null && props[key] !== undefined) { let valor = props[key]; if (typeof valor === 'number') { valor = valor.toLocaleString('pt-BR', { maximumFractionDigits: 2 }); } html += `<b>${key}:</b> ${valor}<br>`; } } html += `</div>`; return html; }
-        function bindDefaultPopup(f, l) { const possibleTitles = ["NM_EQUIPAM", "nome", "NOME", "Nome", "NM_BAIRRO", "Linha", "ELEV"]; let titleField = possibleTitles.find(field => f.properties[field]) || Object.keys(f.properties)[0]; l.bindPopup(createPopupContent(f.properties, titleField)); }
+        
+        // --- FUNÇÃO DE POPUP ESTILIZADO (DESIGN HORIZONTAL) ---
+        function createPopupContent(props, titleField) {
+            const dicionarioAtributos = {
+                "ESCOLA": "Escola", "CÓDIGO IN": "Código INEP", "UF": "Estado", "MUNICÍPIO": "Cidade",
+                "ENDEREÇO": "Endereço", "CATEGORIA": "Categoria", "TELEFONE": "Telefone", "DEPENDÊNC": "Dependência",
+                "LOCALIZAÇ": "Localização", "LOCALIDADE": "Localidade", "CATEGORI 1": "Tipo Particular",
+                "CONVENIADA": "Conveniada", "REGULAMENT": "Regulamentada", "PORTE DA E": "Porte da Escola",
+                "ETAPAS E M": "Etapas de Ensino", "LATITUDE": "Latitude", "LONGITUDE": "Longitude",
+                "NM_EQUIPAM": "Equipamento", "TIPO": "Tipo", "CNES": "Código CNES",
+                "NM_BAIRRO": "Bairro", "nome_bacia": "Bacia Hidrográfica", "ELEV": "Altitude (m)", "Linha": "Linha"
+            };
 
+            const ordemPrioridade = ["ESCOLA", "CÓDIGO IN", "UF", "MUNICÍPIO", "ENDEREÇO", "CATEGORIA", "TELEFONE", "DEPENDÊNC"];
+
+            let title = "INFORMAÇÃO";
+            let html = `<div class="popup-container">
+                            <div class="popup-header"><i class="fas fa-info-circle"></i><span>${title}</span></div>
+                            <div class="popup-body">
+                                <div class="popup-table-wrapper">
+                                    <table class="popup-table">`;
+
+            // Adiciona prioritários
+            ordemPrioridade.forEach(key => {
+                if (props[key] !== undefined && props[key] !== null && props[key] !== "") {
+                    let valor = props[key];
+                    if (typeof valor === 'number') valor = valor.toLocaleString('pt-BR');
+                    html += `<tr><td class="attr-name">${dicionarioAtributos[key]}</td><td class="attr-value">${valor}</td></tr>`;
+                }
+            });
+
+            // Adiciona o restante
+            for (let key in props) {
+                if (!ordemPrioridade.includes(key) && props[key] !== null && props[key] !== undefined && props[key] !== "") {
+                    let valor = props[key];
+                    if (typeof valor === 'number') valor = valor.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+                    if (typeof valor === 'string' && valor.startsWith('http')) {
+                        valor = `<a href="${valor}" target="_blank" style="color:var(--cor-principal); font-weight:700;">Acessar <i class="fas fa-external-link-alt"></i></a>`;
+                    }
+                    let label = dicionarioAtributos[key] || key.replace(/_/g, ' ');
+                    html += `<tr><td class="attr-name">${label}</td><td class="attr-value">${valor}</td></tr>`;
+                }
+            }
+
+            html += `</table></div></div></div>`;
+            return html;
+        }
+
+        function bindDefaultPopup(f, l) {
+            const possibleTitles = ["NM_EQUIPAM", "nome", "NOME", "Nome", "NM_BAIRRO", "Linha", "ELEV"];
+            let titleField = possibleTitles.find(field => f.properties[field]) || Object.keys(f.properties)[0];
+            l.bindPopup(createPopupContent(f.properties, titleField));
+        }
+
+        // --- LÓGICA DE CAMADAS E LEGENDA ---
         function updateLegend() {
             const container = document.getElementById('legendContainer');
             const content = document.getElementById('legendContent');
@@ -373,6 +352,7 @@
 
         const iconS = (c, i) => L.divIcon({className:'custom-icon', html:`<i class="${i}" style="color:${c}; font-size:18px; text-shadow: 1px 1px 1px #fff;"></i>`});
 
+        // EVENTOS DOS BOTOES DE CAMADA
         document.getElementById('limitesLayerToggle').onclick = () => loadGeneric('limitesLayerToggle', 'data/Limite_municipal.geojson', ()=>({color:'red', weight:2, fill:false}), (f, l) => bindDefaultPopup(f, l));
         document.getElementById('bairrosLayerToggle').onclick = () => loadGeneric('bairrosLayerToggle', 'data/Bairros.geojson', ()=>({color:'#e67e22', fillColor:'#f39c12', weight:2, fillOpacity:0.4}), (f, l) => { l.bindPopup(createPopupContent(f.properties, "NM_BAIRRO")); if (f.properties.NM_BAIRRO) l.bindTooltip(f.properties.NM_BAIRRO, { permanent: true, direction: 'center', className: 'label-style' }); addHoverEffect(l, 'bairrosLayerToggle'); });
         document.getElementById('distritosLayerToggle').onclick = () => loadGeneric('distritosLayerToggle', 'data/distritos_rurais.geojson', ()=>({color:'#5D2E0C', fillColor:'#8B4513', weight:2, fillOpacity:0.2}), (f, l) => { bindDefaultPopup(f, l); addHoverEffect(l, 'distritosLayerToggle'); });
@@ -389,6 +369,7 @@
         document.getElementById('mercadosLayerToggle').onclick = () => loadGeneric('mercadosLayerToggle', 'data/mercados_feiras_matadouros.geojson', (f) => { const tipoVal = (f.properties['Tipo'] || f.properties['tipo'] || f.properties['TIPO'] || '').toUpperCase().trim(); const cor = getMercadoColor(tipoVal); return { color: cor, fillColor: cor, weight: 2, fillOpacity: 0.6 }; }, (f, l) => bindDefaultPopup(f, l));
         document.getElementById('baciasLayerToggle').onclick = () => loadGeneric('baciasLayerToggle', 'data/bacias_hidrograficas.geojson', (f) => ({ color: getBaciaColor(f.properties.nome_bacia), fillColor: getBaciaColor(f.properties.nome_bacia), weight: 1.5, fillOpacity: 0.3 }), (f, l) => { l.bindPopup(createPopupContent(f.properties, "nome_bacia")); addHoverEffect(l, 'baciasLayerToggle'); });
 
+        // CONTROLES DE INTERFACE
         function performMapSearch() {
             const query = document.getElementById('mapSearchInput').value.toLowerCase().trim();
             if (!query) return;
