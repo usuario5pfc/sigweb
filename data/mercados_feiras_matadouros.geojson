@@ -1,7 +1,7 @@
 {
 "type": "FeatureCollection",
 "name": "mercados_feiras_matadouros",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::4674" } },
 "features": [
 { "type": "Feature", "properties": { "id": 1, "Nome": "Feira Livre do Alto", "Inaugurado": null, "Tipo": "FEIRA", "Bairro": "Popular" }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -34.982120877701853, -7.135482633616191 ], [ -34.981029863351402, -7.135559061941967 ], [ -34.981035595475831, -7.135650775932898 ], [ -34.982130431242574, -7.135551419109389 ], [ -34.982120877701853, -7.135482633616191 ] ] ] ] } },
 { "type": "Feature", "properties": { "id": 2, "Nome": "Mercado Público de Santa Rita", "Inaugurado": 0, "Tipo": "MERCADO", "Bairro": "Centro" }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -34.981226666290219, -7.122672290862062 ], [ -34.979862420675119, -7.123509181029308 ], [ -34.980282776466886, -7.124177928879848 ], [ -34.981696700493735, -7.123272253219404 ], [ -34.981226666290219, -7.122672290862062 ] ] ] ] } },

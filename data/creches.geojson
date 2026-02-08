@@ -1,7 +1,7 @@
 {
 "type": "FeatureCollection",
 "name": "creches",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::4674" } },
 "features": [
 { "type": "Feature", "properties": { "id": 1, "nome": "Cheche Elias Herckmans", "bairro": "Popular", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -34.98544646889799, -7.135142193555994 ] ] } },
 { "type": "Feature", "properties": { "id": 2, "nome": "Creche Nenzinha Ribeiro", "bairro": "Popular", "cod_inep": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -34.978855584482311, -7.136732303830501 ] ] } },

@@ -1,7 +1,7 @@
 {
 "type": "FeatureCollection",
 "name": "saude_santarita",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::4674" } },
 "features": [
 { "type": "Feature", "properties": { "CO_CNES": 76627, "CO_UNIDADE": 2513700076630.0, "CO_UF": 25, "CO_IBGE": 251370, "NO_RAZAO_S": "MUNICIPIO DE SANTA RITA", "NO_FANTASI": "SERVICO DE ATENCAO DOMICILIAR SAD SANTA RITA", "DS_ESFERA_": "MUNICIPAL", "CO_CEP": 58300970, "NO_LOGRADO": "AV FLAVIO RIBEIRO COUTINHO", "NU_ENDEREC": "S/N", "NO_BAIRRO": "CENTRO", "DS_TURNO_A": "ATENDIMENTOS NOS TURNOS DA MANHA E A TARDE", "Latitude": -7.125837, "Longitude": -34.978, "TIPO": "UBS" }, "geometry": { "type": "Point", "coordinates": [ -34.978, -7.1258372 ] } },
 { "type": "Feature", "properties": { "CO_CNES": 163325, "CO_UNIDADE": 2513700163320.0, "CO_UF": 25, "CO_IBGE": 251370, "NO_RAZAO_S": "MUNICIPIO DE SANTA RITA", "NO_FANTASI": "SAMU 192 SANTA RITA USB 4A15", "DS_ESFERA_": "MUNICIPAL", "CO_CEP": 58304500, "NO_LOGRADO": "DOM PEDRO II", "NU_ENDEREC": "S/N", "NO_BAIRRO": "TIBIRI FABRICA", "DS_TURNO_A": "ATENDIMENTO CONTINUO DE 24 HORAS/DIA (PLANTAO:INCLUI SABADOS. DOMINGOS E FERIADOS)", "Latitude": -7.123878, "Longitude": -34.971457, "TIPO": "UBS" }, "geometry": { "type": "Point", "coordinates": [ -34.971456527699999, -7.1238779865 ] } },
