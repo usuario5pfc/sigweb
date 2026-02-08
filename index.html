@@ -115,7 +115,6 @@
             font-family: var(--fonte-principal); 
             color: var(--cor-texto-escuro); 
             pointer-events: none;
-            /* Fundo removido conforme solicitado */
         }
         .coord-row { display: flex; align-items: center; margin-bottom: 4px; }
         .coord-label { font-weight: 700; color: var(--cor-principal); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; width: 40px; margin-right: 10px; border-right: 2px solid var(--cor-principal); }
@@ -354,15 +353,13 @@
             container.style.display = hasVisible ? 'block' : 'none';
         }
 
-        /* MODIFICAÇÃO: ZOOM AUTOMÁTICO AO LIGAR A CAMADA */
         function loadGeneric(id, path, styleFunc, onEachFunc, isPoint, iconFunc) { 
             let check = document.getElementById(id).checked; 
             if (activeLayers[id]) { 
                 if (check) { 
                     activeLayers[id].addTo(mymap); 
-                    // Zoom automático ao reativar camada já carregada
                     if (activeLayers[id].getBounds) {
-                        mymap.flyToBounds(activeLayers[id].getBounds(), { animate: true, duration: 1.5 });
+                        mymap.flyToBounds(activeLayers[id].getBounds(), { animate: true, duration: 0.3 });
                     }
                 } else { 
                     mymap.removeLayer(activeLayers[id]); 
@@ -378,7 +375,6 @@
                     onEachFeature: (f, l) => { if (onEachFunc) onEachFunc(f, l); } 
                 }).addTo(mymap); 
                 
-                // Zoom automático ao carregar a camada pela primeira vez
                 if (activeLayers[id].getBounds) {
                     mymap.flyToBounds(activeLayers[id].getBounds(), { animate: true, duration: 1.5 });
                 }
@@ -405,7 +401,6 @@
         document.getElementById('mercadosLayerToggle').onclick = () => loadGeneric('mercadosLayerToggle', 'data/mercados_feiras_matadouros.geojson', (f) => { const tipoVal = (f.properties['Tipo'] || f.properties['tipo'] || f.properties['TIPO'] || '').toUpperCase().trim(); const cor = getMercadoColor(tipoVal); return { color: cor, fillColor: cor, weight: 2, fillOpacity: 0.6 }; }, (f, l) => bindDefaultPopup(f, l));
         document.getElementById('baciasLayerToggle').onclick = () => loadGeneric('baciasLayerToggle', 'data/bacias_hidrograficas.geojson', (f) => ({ color: getBaciaColor(f.properties.nome_bacia), fillColor: getBaciaColor(f.properties.nome_bacia), weight: 1.5, fillOpacity: 0.3 }), (f, l) => { l.bindPopup(createPopupContent(f.properties, "nome_bacia")); addHoverEffect(l, 'baciasLayerToggle'); });
 
-        /* MODIFICAÇÃO: EFEITO FLYTO NA BUSCA */
         function performMapSearch() {
             const query = document.getElementById('mapSearchInput').value.toLowerCase().trim();
             if (!query) return;
@@ -419,7 +414,7 @@
                         if (searchableText.includes(query)) {
                             found = true;
                             if (layer.getLatLng) {
-                                mymap.flyTo(layer.getLatLng(), 18, { animate: true, duration: 0.8 });
+                                mymap.flyTo(layer.getLatLng(), 18, { animate: true, duration: 0.3 });
                             } else if (layer.getBounds) {
                                 mymap.flyToBounds(layer.getBounds(), { maxZoom: 18, animate: true, duration: 0.25 });
                             }
@@ -431,13 +426,13 @@
             if (!found) alert("Nenhum resultado encontrado nas camadas ativas.");
         }
 
-        document.getElementById('mapSearchBtn').onclick = performMapSearch;
-        document.getElementById('mapSearchInput').onkeyup = (e) => { if (e.key === 'Enter') performMapSearch(); };
-        document.querySelectorAll('.accordion-title').forEach(t => t.onclick = () => t.parentElement.classList.toggle('active'));
-        document.getElementById('sidebarToggleBtn').onclick = () => document.getElementById('sidebarMenu').classList.add('active');
-        document.getElementById('closeSidebarBtn').onclick = () => document.getElementById('sidebarMenu').classList.remove('active');
-        
-        loadGeneric('limitesLayerToggle', 'data/Limite_municipal.geojson', ()=>({color:'red', weight:2, fill:false}), (f, l) => bindDefaultPopup(f, l));
+            document.getElementById('mapSearchBtn').onclick = performMapSearch;
+            document.getElementById('mapSearchInput').onkeyup = (e) => { if (e.key === 'Enter') performMapSearch(); };
+            document.querySelectorAll('.accordion-title').forEach(t => t.onclick = () => t.parentElement.classList.toggle('active'));
+            document.getElementById('sidebarToggleBtn').onclick = () => document.getElementById('sidebarMenu').classList.add('active');
+            document.getElementById('closeSidebarBtn').onclick = () => document.getElementById('sidebarMenu').classList.remove('active');
+            
+            loadGeneric('limitesLayerToggle', 'data/Limite_municipal.geojson', ()=>({color:'red', weight:2, fill:false}), (f, l) => bindDefaultPopup(f, l));
     </script>
 </body>
 </html>
