@@ -359,7 +359,7 @@
                 if (check) { 
                     activeLayers[id].addTo(mymap); 
                     if (activeLayers[id].getBounds) {
-                        mymap.flyToBounds(activeLayers[id].getBounds(), { animate: true, duration: 0.3 });
+                        mymap.flyToBounds(activeLayers[id].getBounds(), { animate: true, duration: 0.1 });
                     }
                 } else { 
                     mymap.removeLayer(activeLayers[id]); 
@@ -376,7 +376,7 @@
                 }).addTo(mymap); 
                 
                 if (activeLayers[id].getBounds) {
-                    mymap.flyToBounds(activeLayers[id].getBounds(), { animate: true, duration: 1.5 });
+                    mymap.flyToBounds(activeLayers[id].getBounds(), { animate: true, duration: 0.4 });
                 }
                 
                 updateLegend(); 
