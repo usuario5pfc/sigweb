@@ -133,6 +133,14 @@
         .sidebar-header img { max-height: 45px; }
         .close-sidebar-btn { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.1em; cursor: pointer; transition: 0.3s; }
         .close-sidebar-btn:hover { color: white; }
+
+        .sidebar-filter { padding: 15px 20px; border-bottom: 1px solid var(--cor-borda); background: #f9f9f9; }
+        .filter-group { display: flex; flex-direction: column; gap: 8px; }
+        .filter-label { font-size: 10px; font-weight: 700; color: var(--cor-principal); text-transform: uppercase; }
+        .filter-controls { display: flex; gap: 5px; }
+        .filter-controls input { flex-grow: 1; padding: 8px; border: 1px solid var(--cor-borda); border-radius: 4px; font-family: var(--fonte-principal); font-size: 12px; }
+        .filter-controls button { background: var(--cor-principal); color: white; border: none; padding: 0 12px; border-radius: 4px; cursor: pointer; }
+
         .accordion-container { overflow-y: auto; flex-grow: 1; }
         .accordion-item { border-bottom: 1px solid var(--cor-borda); }
         .accordion-title { padding: 15px 20px; background-color: var(--cor-fundo); font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -209,6 +217,16 @@
             <button class="close-sidebar-btn" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
         </div>
 
+        <div class="sidebar-filter">
+            <div class="filter-group">
+                <span class="filter-label">Filtro de População (Bairros)</span>
+                <div class="filter-controls">
+                    <input type="number" id="populacaoFiltro" placeholder="Min. pessoas">
+                    <button id="btnFiltrarPop"><i class="fas fa-filter"></i></button>
+                </div>
+            </div>
+        </div>
+
         <div class="accordion-container">
             <div class="accordion-item active">
                 <div class="accordion-title">ARQUIVOS GERAIS <i class="fas fa-chevron-down"></i></div>
@@ -250,7 +268,7 @@
             </div>
 
             <div class="accordion-item">
-                <div class="accordion-title">DOWNLOAD METADADOS <i class="fas fa-chevron-down"></i></div>
+                <div class="accordion-title">DOWNLOAD DE ARQUIVOS <i class="fas fa-chevron-down"></i></div>
                 <div class="accordion-content">
                     <div class="layer-item"><span>Limite Municipal</span><a href="data/Limite_municipal.geojson" download class="download-btn-link"><i class="fas fa-file-download"></i> GEOJSON</a></div>
                     <div class="layer-item"><span>Bairros</span><a href="data/Bairros.geojson" download class="download-btn-link"><i class="fas fa-file-download"></i> GEOJSON</a></div>
@@ -317,7 +335,7 @@
         }
         
         function createPopupContent(props, titleField) {
-            const dicionarioAtributos = { "ESCOLA": "Escola", "CÓDIGO IN": "Código INEP", "UF": "Estado", "MUNICÍPIO": "Cidade", "ENDEREÇO": "Endereço", "CATEGORIA": "Categoria", "TELEFONE": "Telefone", "DEPENDÊNC": "Dependência", "LOCALIZAÇ": "Localização", "LOCALIDADE": "Localidade", "CATEGORI 1": "Tipo Particular", "CONVENIADA": "Conveniada", "REGULAMENT": "Regulamentada", "PORTE DA E": "Porte da Escola", "ETAPAS E M": "Etapas de Ensino", "LATITUDE": "Latitude", "LONGITUDE": "Longitude", "NM_EQUIPAM": "Equipamento", "TIPO": "Tipo", "CNES": "Código CNES", "NM_BAIRRO": "Bairro", "nome_bacia": "Bacia Hidrográfica", "ELEV": "Altitude (m)", "Linha": "Linha" };
+            const dicionarioAtributos = { "ESCOLA": "Escola", "CÓDIGO IN": "Código INEP", "UF": "Estado", "MUNICÍPIO": "Cidade", "ENDEREÇO": "Endereço", "CATEGORIA": "Categoria", "TELEFONE": "Telefone", "DEPENDÊNC": "Dependência", "LOCALIZAÇ": "Localização", "LOCALIDADE": "Localidade", "CATEGORI 1": "Tipo Particular", "CONVENIADA": "Conveniada", "REGULAMENT": "Regulamentada", "PORTE DA E": "Porte da Escola", "ETAPAS E M": "Etapas de Ensino", "LATITUDE": "Latitude", "LONGITUDE": "Longitude", "NM_EQUIPAM": "Equipamento", "TIPO": "Tipo", "CNES": "Código CNES", "NM_BAIRRO": "Bairro", "nome_bacia": "Bacia Hidrográfica", "ELEV": "Altitude (m)", "Linha": "Linha", "pop_ibge2022": "População IBGE 2022" };
             const ordemPrioridade = ["ESCOLA", "CÓDIGO IN", "UF", "MUNICÍPIO", "ENDEREÇO", "CATEGORIA", "TELEFONE", "DEPENDÊNC"];
             let html = `<div class="popup-container"><div class="popup-header"><i class="fas fa-info-circle"></i><span>INFORMAÇÃO</span></div><div class="popup-body"><div class="popup-table-wrapper"><table class="popup-table">`;
             ordemPrioridade.forEach(key => { if (props[key] !== undefined && props[key] !== null && props[key] !== "") { let valor = props[key]; if (typeof valor === 'number') valor = valor.toLocaleString('pt-BR'); html += `<tr><td class="attr-name">${dicionarioAtributos[key]}</td><td class="attr-value">${valor}</td></tr>`; } });
@@ -359,7 +377,7 @@
                 if (check) { 
                     activeLayers[id].addTo(mymap); 
                     if (activeLayers[id].getBounds) {
-                        mymap.flyToBounds(activeLayers[id].getBounds(), { animate: true, duration: 0.1 });
+                        mymap.flyToBounds(activeLayers[id].getBounds(), { animate: true, duration: 0.5 });
                     }
                 } else { 
                     mymap.removeLayer(activeLayers[id]); 
@@ -376,7 +394,7 @@
                 }).addTo(mymap); 
                 
                 if (activeLayers[id].getBounds) {
-                    mymap.flyToBounds(activeLayers[id].getBounds(), { animate: true, duration: 0.4 });
+                    mymap.flyToBounds(activeLayers[id].getBounds(), { animate: true, duration: 0.5 });
                 }
                 
                 updateLegend(); 
@@ -426,13 +444,55 @@
             if (!found) alert("Nenhum resultado encontrado nas camadas ativas.");
         }
 
-            document.getElementById('mapSearchBtn').onclick = performMapSearch;
-            document.getElementById('mapSearchInput').onkeyup = (e) => { if (e.key === 'Enter') performMapSearch(); };
-            document.querySelectorAll('.accordion-title').forEach(t => t.onclick = () => t.parentElement.classList.toggle('active'));
-            document.getElementById('sidebarToggleBtn').onclick = () => document.getElementById('sidebarMenu').classList.add('active');
-            document.getElementById('closeSidebarBtn').onclick = () => document.getElementById('sidebarMenu').classList.remove('active');
+        document.getElementById('btnFiltrarPop').onclick = function() {
+            const minPop = parseInt(document.getElementById('populacaoFiltro').value);
+            if (isNaN(minPop)) { alert("Insira um número válido."); return; }
             
-            loadGeneric('limitesLayerToggle', 'data/Limite_municipal.geojson', ()=>({color:'red', weight:2, fill:false}), (f, l) => bindDefaultPopup(f, l));
+            if (!activeLayers['bairrosLayerToggle'] || !mymap.hasLayer(activeLayers['bairrosLayerToggle'])) {
+                alert("Ative a camada de Bairros primeiro.");
+                return;
+            }
+
+            const geojsonData = activeLayers['bairrosLayerToggle'].toGeoJSON();
+            const filteredFeatures = geojsonData.features.filter(f => {
+                // Acessando exatamente o nome da coluna pop_ibge2022
+                const popValue = f.properties["pop_ibge2022"];
+                const pop = Number(popValue || 0);
+                return pop >= minPop;
+            });
+
+            if (filteredFeatures.length === 0) {
+                alert("Nenhum bairro encontrado com esta população mínima.");
+                return;
+            }
+
+            const filteredData = {
+                ...geojsonData,
+                features: filteredFeatures
+            };
+
+            mymap.removeLayer(activeLayers['bairrosLayerToggle']);
+            activeLayers['bairrosLayerToggle'] = L.geoJson(filteredData, {
+                // Estilo para destacar os filtrados em VERMELHO
+                style: () => ({ color: '#ff0000', fillColor: '#ff0000', weight: 4, fillOpacity: 0.75 }),
+                onEachFeature: (f, l) => {
+                    bindDefaultPopup(f, l);
+                    if (f.properties.NM_BAIRRO) l.bindTooltip(f.properties.NM_BAIRRO, { permanent: true, direction: 'center', className: 'label-style' });
+                    l.on('mouseover', function (e) { e.target.setStyle({ weight: 6, fillOpacity: 0.9 }); });
+                    l.on('mouseout', function (e) { e.target.setStyle({ weight: 4, fillOpacity: 0.75 }); });
+                }
+            }).addTo(mymap);
+
+            mymap.flyToBounds(activeLayers['bairrosLayerToggle'].getBounds(), { animate: true, duration: 0.5 });
+        };
+
+        document.getElementById('mapSearchBtn').onclick = performMapSearch;
+        document.getElementById('mapSearchInput').onkeyup = (e) => { if (e.key === 'Enter') performMapSearch(); };
+        document.querySelectorAll('.accordion-title').forEach(t => t.onclick = () => t.parentElement.classList.toggle('active'));
+        document.getElementById('sidebarToggleBtn').onclick = () => document.getElementById('sidebarMenu').classList.add('active');
+        document.getElementById('closeSidebarBtn').onclick = () => document.getElementById('sidebarMenu').classList.remove('active');
+        
+        loadGeneric('limitesLayerToggle', 'data/Limite_municipal.geojson', ()=>({color:'red', weight:2, fill:false}), (f, l) => bindDefaultPopup(f, l));
     </script>
 </body>
-</html>
+</html> 
