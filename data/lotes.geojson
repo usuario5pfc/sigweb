@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "lotes",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::4674" } },
+"features": [
+{ "type": "Feature", "properties": { "id": 1, "cod_lote": 121412, "setor_loc": 5, "quadra": 96, "lote": 129, "logradouro": "Rua Cidade de Brieno", "numero": "561", "bairro": "Jardim Europa", "CEP": "58302-278", "complement": "Casa", "Proprietar": "José de Arimatéia Tomaz da Costa", "testada": "10", "area_lote": "250", "iscr_cartografica": "050960129" }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -34.963730216707837, -7.143837468572242 ], [ -34.963637502940848, -7.143856389749178 ], [ -34.963681021647801, -7.14406546875433 ], [ -34.963774681473637, -7.144046547577393 ], [ -34.963730216707837, -7.143837468572242 ] ] ] ] } }
+]
+}

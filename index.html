@@ -120,6 +120,27 @@
         .coord-label { font-weight: 700; color: var(--cor-principal); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; width: 40px; margin-right: 10px; border-right: 2px solid var(--cor-principal); }
         .coord-value { font-family: 'monospace'; font-size: 13px; color: #333; font-weight: 600; text-shadow: 1px 1px 1px white; }
 
+        /* ESTILO DA ESCALA NUMÉRICA ARREDONDADA */
+        .custom-scale-container {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: white;
+            padding: 6px 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            font-family: var(--fonte-principal);
+            font-weight: 700;
+            font-size: 12px;
+            color: #333;
+            pointer-events: none;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
         .map-legend { position: absolute; top: 180px; right: 10px; z-index: 1000; background: white; padding: 12px; border-radius: 8px; box-shadow: var(--sombra-media); max-height: 55vh; overflow-y: auto; display: none; width: 230px; font-size: 11px; }
         .legend-title { font-weight: 700; margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; color: var(--cor-principal); text-transform: uppercase; }
         .legend-subtitle { font-weight: 700; font-size: 10px; color: #666; margin-top: 10px; margin-bottom: 5px; border-left: 3px solid var(--cor-principal); padding-left: 5px; text-transform: uppercase;}
@@ -291,6 +312,36 @@
         L.control.layers(baseMaps, {}, {position: 'topright'}).addTo(mymap);
         L.control.polylineMeasure({ position: 'topright', unit: 'kilometres' }).addTo(mymap);
 
+        // ADICIONA ESCALA GRÁFICA (BARRA)
+        L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(mymap);
+
+        // LÓGICA DA ESCALA NUMÉRICA ARREDONDADA (PADRÃO CARTOGRÁFICO)
+        const scaleDiv = L.DomUtil.create('div', 'custom-scale-container', document.body);
+        scaleDiv.innerHTML = 'ESCALA | 1:---';
+
+        function updateNumericScale() {
+            const mapWidth = mymap.getSize().x;
+            const pointC = mymap.containerPointToLatLng([0, 0]);
+            const pointD = mymap.containerPointToLatLng([mapWidth, 0]);
+            const distanceMeters = pointC.distanceTo(pointD);
+            const screenWidthCm = mapWidth * 0.026458333; 
+            const distanceCm = distanceMeters * 100;
+            const rawScale = distanceCm / screenWidthCm;
+
+            // LISTA DE ESCALAS PADRÃO PARA ARREDONDAMENTO
+            const escalasPadrao = [1000, 2000, 5000, 10000, 20000, 25000, 50000, 100000, 250000, 500000, 1000000];
+            
+            // ENCONTRA A ESCALA MAIS PRÓXIMA DA LISTA
+            const closestScale = escalasPadrao.reduce((prev, curr) => {
+                return (Math.abs(curr - rawScale) < Math.abs(prev - rawScale) ? curr : prev);
+            });
+
+            scaleDiv.innerHTML = `ESCALA | 1:${closestScale.toLocaleString('pt-BR')}`;
+        }
+
+        mymap.on('zoomend moveend', updateNumericScale);
+        updateNumericScale();
+
         mymap.on('mousemove', function(e) {
             const lat = e.latlng.lat;
             const lng = e.latlng.lng;
@@ -342,7 +393,7 @@
                 if (mymap.hasLayer(activeLayers[id])) {
                     hasVisible = true;
                     if (id === 'escolasLayerToggle') { content.innerHTML += `<div class="legend-subtitle">UNIDADES DE ENSINO:</div>`; const cats = [{n:'Municipal', c:'#0076a5'}, {n:'Estadual', c:'#e74c3c'}, {n:'Federal', c:'#2ecc71'}, {n:'Privada', c:'#f39c12'}, {n:'Filantrópica', c:'#9b59b6'}]; cats.forEach(cat => { content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border:none; text-align:center;"><i class="fas fa-map-marker-alt" style="color:${cat.c}"></i></div><span>${cat.n}</span></div>`; }); }
-                    else if (id === 'curvasLayerToggle') { content.innerHTML += `<div class="legend-subtitle">CURVAS DE NÍVEL:</div>`; content.innerHTML += `<div class="legend-item"><div class="legend-line" style="background:#8B4513; height:1px;"></div><span>Elevação < 50m</span></div>`; content.innerHTML += `<div class="legend-item"><div class="legend-line" style="background:#8B4513; height:4px;"></div><span>Elevação = > 50m (Mestra)</span></div>`; }
+                    else if (id === 'curvasLayerToggle') { content.innerHTML += `<div class="legend-subtitle">CURVAS DE NÍVEL:</div>`; content.innerHTML += `<div class="legend-item"><div class="legend-line" style="background:#8B4513; height:1px;"></div><span>Elevação < 50m</span></div>`; content.innerHTML += `<div class="legend-item"><div class="legend-line" style="background:#8B4513; height:4px;"></div><span>Elevação = 50m (Mestra)</span></div>`; }
                     else if (id === 'postosSaudeLayerToggle') { content.innerHTML += `<div class="legend-subtitle">Unidades de Saúde:</div>`; const tipos = [{n:'Hospitais', c:'#ff00ff', i:'fas fa-hospital'}, {n:'Centros de Saúde', c:'#ccff00', i:'fas fa-clinic-medical'}, {n:'Serviços de Saúde', c:'#2980b9', i:'fas fa-clinic-medical'}, {n:'Unidade Básica de Saúde (UBS)', c:'#c0392b', i:'fas fa-map-marker-alt'}, {n:'Secretaria de Saúde', c:'#8e44ad', i:'fas fa-map-marker-alt'}]; tipos.forEach(t => { content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border:none; text-align:center;"><i class="${t.i}" style="color:${t.c}"></i></div><span>${t.n}</span></div>`; }); }
                     else if (id === 'mercadosLayerToggle') { content.innerHTML += `<div class="legend-subtitle">MERCADOS E FEIRAS:</div>`; const tiposM = [{n:'Mercados Públicos', c:'#1b5e20'}, {n:'Feiras Livres', c:'#f1c40f'}, {n:'Abatedouros', c:'#9b59b6'}]; tiposM.forEach(t => { content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border: 1px solid ${t.c}; background: ${t.c}; opacity: 0.8;"></div><span>${t.n}</span></div>`; }); }
                     else if (id === 'pracasLayerToggle') { content.innerHTML += `<div class="legend-subtitle">EQUIPAMENTOS DE LAZER:</div>`; const tiposP = [{n:'Parques', c:'#ff0000'}, {n:'Praças', c:'#0000ff'}, {n:'Calçadões', c:'#ffff00'}]; tiposP.forEach(t => { content.innerHTML += `<div class="legend-item"><div class="legend-symbol" style="border: 1px solid ${t.c}; background: ${t.c}; opacity: 0.8;"></div><span>${t.n}</span></div>`; }); }
